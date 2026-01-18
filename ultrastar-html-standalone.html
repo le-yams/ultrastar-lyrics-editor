@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UltraStar Sync Tool</title>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <div id="root"></div>
+    
+    <script type="text/babel">
+        const { useState } = React;
+
+        // Icônes SVG simples
+        const Upload = () => (
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+        );
+
+        const Download = ({ className }) => (
+            <svg className={className || "w-5 h-5"} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+        );
+
+        const UltraStarSyncTool = () => {
+            const [originalLines, setOriginalLines] = useState([]);
+            const [newLyrics, setNewLyrics] = useState('');
+            const [syncedLines, setSyncedLines] = useState([]);
+            const [headerInfo, setHeaderInfo] = useState({});
+            const [outputText, setOutputText] = useState('');
+            const [showOutput, setShowOutput] = useState(false);
+
+            const parseUltraStarFile = (content) => {
+                const lines = content.split('\n');
+                const header = {};
+                const noteLines = [];
+                
+                lines.forEach(line => {
+                    if (line.startsWith('#')) {
+                        const [key, ...valueParts] = line.substring(1).split(':');
+                        header[key] = valueParts.join(':').trim();
+                    } else if (line.match(/^[:\*FR-]/) || line.trim() === 'E') {
+                        noteLines.push(line);
+                    }
+                });
+                
+                setHeaderInfo(header);
+                setOriginalLines(noteLines);
+                return noteLines;
+            };
+
+            const handleOriginalFileUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        parseUltraStarFile(event.target.result);
+                    };
+                    reader.readAsText(file);
+                }
+            };
+
+            const handleNewLyricsChange = (e) => {
+                setNewLyrics(e.target.value);
+            };
+
+            const handleNewLyricsFileUpload = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        setNewLyrics(event.target.result);
+                    };
+                    reader.readAsText(file);
+                }
+            };
+
+            const extractWords = () => {
+                const lines = newLyrics.split('\n');
+                const phrases = [];
+                
+                lines.forEach(line => {
+                    // Nettoyer la ligne des marqueurs de structure
+                    const cleanLine = line.replace(/\[.*?\]/g, '').trim();
+                    if (cleanLine) {
+                        // Séparer par espaces pour obtenir les mots/syllabes
+                        const words = cleanLine.split(/\s+/).filter(w => w.length > 0);
+                        if (words.length > 0) {
+                            phrases.push(words);
+                        }
+                    }
+                });
+                
+                return phrases;
+            };
+
+            const autoSync = () => {
+                const newPhrases = extractWords();
+                
+                // Grouper les lignes de notes par blocs séparés par des pauses
+                const noteBlocks = [];
+                let currentBlock = [];
+                
+                originalLines.forEach(line => {
+                    if (line.match(/^[:\*FR]/)) {
+                        currentBlock.push(line);
+                    } else if (line.startsWith('-')) {
+                        if (currentBlock.length > 0) {
+                            noteBlocks.push(currentBlock);
+                            currentBlock = [];
+                        }
+                    }
+                });
+                if (currentBlock.length > 0) {
+                    noteBlocks.push(currentBlock);
+                }
+                
+                console.log('Blocs de notes:', noteBlocks.length);
+                console.log('Nouvelles phrases :', newPhrases.length);
+                
+                // Distribuer les phrases sur les blocs
+                const synced = [];
+                let blockIndex = 0;
+                let wordIndexInBlock = 0;
+                
+                originalLines.forEach(line => {
+                    if (line.startsWith('-')) {
+                        synced.push({ type: 'break', line: line, original: '' });
+                        // Passer au bloc suivant après une pause
+                        if (wordIndexInBlock > 0) {
+                            blockIndex++;
+                            wordIndexInBlock = 0;
+                        }
+                    } else if (line.match(/^[:\*FR]/)) {
+                        const parts = line.split(' ');
+                        const type = parts[0];
+                        const start = parts[1];
+                        const duration = parts[2];
+                        const pitch = parts[3];
+                        const originalText = parts.slice(4).join(' ');
+                        
+                        let frenchText = '';
+                        if (blockIndex < newPhrases.length) {
+                            const currentPhrase = newPhrases[blockIndex];
+                            if (wordIndexInBlock < currentPhrase.length) {
+                                frenchText = currentPhrase[wordIndexInBlock];
+                                // Ajouter un espace après chaque mot sauf le dernier de la phrase
+                                if (wordIndexInBlock < currentPhrase.length - 1) {
+                                    frenchText += ' ';
+                                }
+                            }
+                            wordIndexInBlock++;
+                        }
+                        
+                        const newLine = `${type} ${start} ${duration} ${pitch} ${frenchText}`;
+                        synced.push({ type: 'note', line: newLine, original: originalText });
+                    } else if (line.trim() === 'E') {
+                        synced.push({ type: 'end', line: line, original: '' });
+                    } else {
+                        synced.push({ type: 'other', line: line, original: '' });
+                    }
+                });
+                
+                setSyncedLines(synced);
+            };
+
+            const generateOutput = () => {
+                let output = '';
+                
+                Object.keys(headerInfo).forEach(key => {
+                    if (key === 'LANGUAGE') {
+                        output += `#${key}:French\n`;
+                    } else {
+                        output += `#${key}:${headerInfo[key]}\n`;
+                    }
+                });
+                
+                syncedLines.forEach(item => {
+                    output += item.line + '\n';
+                });
+                
+                setOutputText(output);
+                setShowOutput(true);
+            };
+
+            const copyToClipboard = () => {
+                navigator.clipboard.writeText(outputText);
+                alert('Copié dans le presse-papiers !');
+            };
+
+            const downloadFile = () => {
+                const blob = new Blob([outputText], { type: 'text/plain;charset=utf-8' });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'song_french.txt';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            };
+
+            const updateSyncedLine = (index, newText) => {
+                const newSynced = [...syncedLines];
+                const item = newSynced[index];
+                const parts = item.line.split(' ');
+                const newLine = parts.slice(0, 4).join(' ') + ' ' + newText;
+                newSynced[index] = { ...item, line: newLine };
+                setSyncedLines(newSynced);
+            };
+
+            return (
+                <div className="w-full max-w-6xl mx-auto p-6 bg-gradient-to-br from-purple-50 to-pink-50 min-h-screen">
+                    <div className="bg-white rounded-lg shadow-lg p-6">
+                        <h1 className="text-3xl font-bold text-purple-600 mb-6">
+                            Outil de Synchronisation UltraStar
+                        </h1>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div className="border-2 border-dashed border-purple-300 rounded-lg p-4">
+                                <label className="flex flex-col items-center cursor-pointer">
+                                    <div className="text-purple-500 mb-2">
+                                        <Upload />
+                                    </div>
+                                    <span className="text-sm font-medium text-gray-700 mb-2">
+                                        Charger le fichier UltraStar original
+                                    </span>
+                                    <input
+                                        type="file"
+                                        accept=".txt"
+                                        onChange={handleOriginalFileUpload}
+                                        className="hidden"
+                                    />
+                                    <span className="text-xs text-gray-500">
+                                        {originalLines.length > 0 ? `${originalLines.length} lignes chargées` : 'Aucun fichier'}
+                                    </span>
+                                </label>
+                            </div>
+                            
+                            <div className="border-2 border-purple-300 rounded-lg p-4">
+                                <div className="flex items-center justify-between mb-2">
+                                    <label className="text-sm font-medium text-gray-700">
+                                        Nouvelles Paroles
+                                    </label>
+                                    <label className="cursor-pointer bg-purple-500 text-white px-3 py-1 rounded text-xs hover:bg-purple-600 transition">
+                                        📁 Charger fichier
+                                        <input
+                                            type="file"
+                                            accept=".txt"
+                                            onChange={handleNewLyricsFileUpload}
+                                            className="hidden"
+                                        />
+                                    </label>
+                                </div>
+                                <textarea
+                                    className="w-full h-32 p-2 border border-gray-300 rounded text-sm"
+                                    placeholder="Collez vos nouvelles paroles ici ou chargez un fichier..."
+                                    value={newLyrics}
+                                    onChange={handleNewLyricsChange}
+                                />
+                            </div>
+                        </div>
+
+                        {originalLines.length > 0 && newLyrics && (
+                            <div className="mb-6 text-center">
+                                <button
+                                    onClick={autoSync}
+                                    className="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition"
+                                >
+                                    🎵 Synchroniser automatiquement
+                                </button>
+                                <p className="text-xs text-gray-600 mt-2">
+                                    Les paroles seront alignées sur les timings originaux
+                                </p>
+                            </div>
+                        )}
+
+                        {syncedLines.length > 0 && (
+                            <div className="mb-6">
+                                <h2 className="text-xl font-semibold text-purple-600 mb-3">
+                                    Prévisualisation et Édition
+                                </h2>
+                                <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
+                                    {syncedLines.map((item, index) => {
+                                        if (item.type === 'break') {
+                                            return (
+                                                <div key={index} className="text-gray-400 text-sm py-1">
+                                                    {item.line}
+                                                </div>
+                                            );
+                                        }
+                                        
+                                        if (item.type === 'end') {
+                                            return (
+                                                <div key={index} className="text-gray-600 font-bold text-sm py-1">
+                                                    {item.line}
+                                                </div>
+                                            );
+                                        }
+                                        
+                                        if (item.type === 'note') {
+                                            const parts = item.line.split(' ');
+                                            const text = parts.slice(4).join(' ');
+                                            return (
+                                                <div key={index} className="flex items-center gap-2 py-1">
+                                                    <span className="text-xs text-gray-500 w-16 flex-shrink-0">
+                                                        {parts[0]} {parts[1]}
+                                                    </span>
+                                                    <span className="text-xs text-blue-600 w-32 flex-shrink-0 italic truncate" title={item.original}>
+                                                        {item.original}
+                                                    </span>
+                                                    <input
+                                                        type="text"
+                                                        value={text}
+                                                        onChange={(e) => updateSyncedLine(index, e.target.value)}
+                                                        className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                                                        placeholder="Entrez le texte..."
+                                                    />
+                                                </div>
+                                            );
+                                        }
+                                        
+                                        return (
+                                            <div key={index} className="text-gray-600 text-sm py-1">
+                                                {item.line}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {syncedLines.length > 0 && (
+                            <div className="text-center mb-6">
+                                <button
+                                    onClick={generateOutput}
+                                    className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition inline-flex items-center gap-2"
+                                >
+                                    <Download className="w-5 h-5" />
+                                    Générer le fichier final
+                                </button>
+                            </div>
+                        )}
+
+                        {showOutput && (
+                            <div className="mb-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h2 className="text-xl font-semibold text-purple-600">
+                                        Fichier UltraStar
+                                    </h2>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={copyToClipboard}
+                                            className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition"
+                                        >
+                                            📋 Copier
+                                        </button>
+                                        <button
+                                            onClick={downloadFile}
+                                            className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700 transition inline-flex items-center gap-1"
+                                        >
+                                            <Download className="w-4 h-4" />
+                                            Télécharger
+                                        </button>
+                                    </div>
+                                </div>
+                                <textarea
+                                    value={outputText}
+                                    readOnly
+                                    className="w-full h-96 p-4 border-2 border-green-300 rounded-lg font-mono text-xs bg-gray-50"
+                                />
+                                <p className="text-sm text-gray-600 mt-2">
+                                    ✅ Copiez ou téléchargez ce fichier pour l'utiliser avec UltraStar
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="mt-8 bg-blue-50 rounded-lg p-4">
+                            <h3 className="font-semibold text-blue-900 mb-2">📋 Instructions</h3>
+                            <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+                                <li>Chargez votre fichier UltraStar original</li>
+                                <li>Collez les nouvelles paroles dans la zone de texte</li>
+                                <li>Cliquez sur "Synchroniser automatiquement"</li>
+                                <li>Vérifiez et ajustez manuellement si nécessaire</li>
+                                <li>Générez et copiez le fichier synchronisé</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<UltraStarSyncTool />, document.getElementById('root'));
+    </script>
+</body>
+</html>
