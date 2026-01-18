@@ -89,10 +89,24 @@
                     // Clean the line of structural markers
                     const cleanLine = line.replace(/\[.*?\]/g, '').trim();
                     if (cleanLine) {
-                        // Split by spaces to get words/syllables
+                        // Split by spaces to get words
                         const words = cleanLine.split(/\s+/).filter(w => w.length > 0);
-                        if (words.length > 0) {
-                            phrases.push(words);
+                        const syllables = [];
+
+                        // Split each word by | to get syllables and track word boundaries
+                        words.forEach((word, wordIndex) => {
+                            const wordSyllables = word.split('|').filter(s => s.length > 0);
+                            wordSyllables.forEach((syllable, syllableIndex) => {
+                                syllables.push({
+                                    text: syllable,
+                                    isLastInWord: syllableIndex === wordSyllables.length - 1,
+                                    isLastInPhrase: wordIndex === words.length - 1 && syllableIndex === wordSyllables.length - 1
+                                });
+                            });
+                        });
+
+                        if (syllables.length > 0) {
+                            phrases.push(syllables);
                         }
                     }
                 });
@@ -124,18 +138,18 @@
                 console.log('Note blocks:', noteBlocks.length);
                 console.log('New phrases:', newPhrases.length);
 
-                // Distribute phrases across blocks
+                // Distribute syllables across blocks
                 const synced = [];
                 let blockIndex = 0;
-                let wordIndexInBlock = 0;
-                
+                let syllableIndexInBlock = 0;
+
                 originalLines.forEach(line => {
                     if (line.startsWith('-')) {
                         synced.push({ type: 'break', line: line, original: '' });
                         // Move to next block after a pause
-                        if (wordIndexInBlock > 0) {
+                        if (syllableIndexInBlock > 0) {
                             blockIndex++;
-                            wordIndexInBlock = 0;
+                            syllableIndexInBlock = 0;
                         }
                     } else if (line.match(/^[:\*FR]/)) {
                         const parts = line.split(' ');
@@ -148,14 +162,15 @@
                         let newText = '';
                         if (blockIndex < newPhrases.length) {
                             const currentPhrase = newPhrases[blockIndex];
-                            if (wordIndexInBlock < currentPhrase.length) {
-                                newText = currentPhrase[wordIndexInBlock];
-                                // Add space after each word except the last in the phrase
-                                if (wordIndexInBlock < currentPhrase.length - 1) {
+                            if (syllableIndexInBlock < currentPhrase.length) {
+                                const syllableInfo = currentPhrase[syllableIndexInBlock];
+                                newText = syllableInfo.text;
+                                // Add space after the last syllable of each word, except if it's the last word of the phrase
+                                if (syllableInfo.isLastInWord && !syllableInfo.isLastInPhrase) {
                                     newText += ' ';
                                 }
                             }
-                            wordIndexInBlock++;
+                            syllableIndexInBlock++;
                         }
                         
                         const newLine = `${type} ${start} ${duration} ${pitch} ${newText}`;
