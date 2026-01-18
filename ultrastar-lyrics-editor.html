@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>UltraStar Sync Tool</title>
+    <title>UltraStar Lyrics Editor</title>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -28,7 +28,7 @@
             </svg>
         );
 
-        const UltraStarSyncTool = () => {
+        const UltraStarLyricsEditor = () => {
             const [originalLines, setOriginalLines] = useState([]);
             const [newLyrics, setNewLyrics] = useState('');
             const [syncedLines, setSyncedLines] = useState([]);
@@ -234,7 +234,7 @@
                 <div className="w-full max-w-6xl mx-auto p-6 bg-gradient-to-br from-purple-50 to-pink-50 min-h-screen">
                     <div className="bg-white rounded-lg shadow-lg p-6">
                         <h1 className="text-3xl font-bold text-purple-600 mb-6">
-                            UltraStar Sync Tool
+                            UltraStar Lyrics Editor
                         </h1>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -411,7 +411,7 @@
             );
         };
 
-        ReactDOM.render(<UltraStarSyncTool />, document.getElementById('root'));
+        ReactDOM.render(<UltraStarLyricsEditor />, document.getElementById('root'));
     </script>
 </body>
 </html>
