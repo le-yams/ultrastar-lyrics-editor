@@ -43,34 +43,61 @@
             const [editableLanguage, setEditableLanguage] = useState('');
             const [outputText, setOutputText] = useState('');
             const [showOutput, setShowOutput] = useState(false);
+            const [notification, setNotification] = useState(null);
+            const [isLoading, setIsLoading] = useState(false);
+            const [syncWarnings, setSyncWarnings] = useState([]);
+
+            const showNotification = (message, type = 'success') => {
+                setNotification({ message, type });
+                setTimeout(() => setNotification(null), 3000);
+            };
 
             const parseUltraStarFile = (content) => {
-                const lines = content.split('\n');
-                const header = {};
-                const noteLines = [];
-                
-                lines.forEach(line => {
-                    if (line.startsWith('#')) {
-                        const [key, ...valueParts] = line.substring(1).split(':');
-                        header[key] = valueParts.join(':').trim();
-                    } else if (line.match(/^[:*FR-]/) || line.trim() === 'E') {
-                        noteLines.push(line);
+                try {
+                    const lines = content.split('\n');
+                    const header = {};
+                    const noteLines = [];
+
+                    lines.forEach(line => {
+                        const trimmedLine = line.trim();
+                        if (trimmedLine.startsWith('#')) {
+                            const [key, ...valueParts] = trimmedLine.substring(1).split(':');
+                            header[key.trim()] = valueParts.join(':').trim();
+                        } else if (trimmedLine.match(/^[:*FR-]/) || trimmedLine === 'E') {
+                            noteLines.push(trimmedLine);
+                        }
+                    });
+
+                    if (noteLines.length === 0) {
+                        showNotification('No valid note lines found in file', 'error');
+                        return [];
                     }
-                });
-                
-                setHeaderInfo(header);
-                setEditableTitle(header.TITLE || '');
-                setEditableLanguage(header.LANGUAGE || '');
-                setOriginalLines(noteLines);
-                return noteLines;
+
+                    setHeaderInfo(header);
+                    setEditableTitle(header.TITLE || '');
+                    setEditableLanguage(header.LANGUAGE || '');
+                    setOriginalLines(noteLines);
+                    showNotification(`File loaded: ${noteLines.length} lines`, 'success');
+                    return noteLines;
+                } catch (error) {
+                    showNotification('Error parsing UltraStar file: ' + error.message, 'error');
+                    return [];
+                }
             };
 
             const handleOriginalFileUpload = (e) => {
                 const file = e.target.files[0];
                 if (file) {
+                    if (!file.name.endsWith('.txt')) {
+                        showNotification('Please select a .txt file', 'error');
+                        return;
+                    }
                     const reader = new FileReader();
                     reader.onload = (event) => {
                         parseUltraStarFile(event.target.result);
+                    };
+                    reader.onerror = () => {
+                        showNotification('Error reading file', 'error');
                     };
                     reader.readAsText(file);
                 }
@@ -86,6 +113,10 @@
                     const reader = new FileReader();
                     reader.onload = (event) => {
                         setNewLyrics(event.target.result);
+                        showNotification('Lyrics file loaded', 'success');
+                    };
+                    reader.onerror = () => {
+                        showNotification('Error reading lyrics file', 'error');
                     };
                     reader.readAsText(file);
                 }
@@ -125,100 +156,140 @@
             };
 
             const autoSync = () => {
-                const newPhrases = extractWords();
-                
-                // Group note lines by blocks separated by pauses
-                const noteBlocks = [];
-                let currentBlock = [];
-                
-                originalLines.forEach(line => {
-                    if (line.match(/^[:*FR]/)) {
-                        currentBlock.push(line);
-                    } else if (line.startsWith('-')) {
-                        if (currentBlock.length > 0) {
-                            noteBlocks.push(currentBlock);
-                            currentBlock = [];
-                        }
-                    }
-                });
-                if (currentBlock.length > 0) {
-                    noteBlocks.push(currentBlock);
-                }
-                
-                console.log('Note blocks:', noteBlocks.length);
-                console.log('New phrases:', newPhrases.length);
+                setIsLoading(true);
+                setSyncWarnings([]);
+                const warnings = [];
 
-                // Distribute syllables across blocks
-                const synced = [];
-                let blockIndex = 0;
-                let syllableIndexInBlock = 0;
+                try {
+                    const newPhrases = extractWords();
 
-                originalLines.forEach(line => {
-                    if (line.startsWith('-')) {
-                        synced.push({ type: 'break', line: line, original: '' });
-                        // Move to next block after a pause
-                        if (syllableIndexInBlock > 0) {
-                            blockIndex++;
-                            syllableIndexInBlock = 0;
-                        }
-                    } else if (line.match(/^[:*FR]/)) {
-                        const parts = line.split(' ');
-                        const type = parts[0];
-                        const start = parts[1];
-                        const duration = parts[2];
-                        const pitch = parts[3];
-                        const originalText = parts.slice(4).join(' ');
-                        
-                        let newText = '';
-                        if (blockIndex < newPhrases.length) {
-                            const currentPhrase = newPhrases[blockIndex];
-                            if (syllableIndexInBlock < currentPhrase.length) {
-                                const syllableInfo = currentPhrase[syllableIndexInBlock];
-                                newText = syllableInfo.text;
-                                // Add space after the last syllable of each word, except if it's the last word of the phrase
-                                if (syllableInfo.isLastInWord && !syllableInfo.isLastInPhrase) {
-                                    newText += ' ';
-                                }
+                    // Group note lines by blocks separated by pauses
+                    const noteBlocks = [];
+                    let currentBlock = [];
+
+                    originalLines.forEach(line => {
+                        if (line.match(/^[:*FR]/)) {
+                            currentBlock.push(line);
+                        } else if (line.startsWith('-')) {
+                            if (currentBlock.length > 0) {
+                                noteBlocks.push(currentBlock);
+                                currentBlock = [];
                             }
-                            syllableIndexInBlock++;
                         }
-                        
-                        const newLine = `${type} ${start} ${duration} ${pitch} ${newText}`;
-                        synced.push({ type: 'note', line: newLine, original: originalText });
-                    } else if (line.trim() === 'E') {
-                        synced.push({ type: 'end', line: line, original: '' });
-                    } else {
-                        synced.push({ type: 'other', line: line, original: '' });
+                    });
+                    if (currentBlock.length > 0) {
+                        noteBlocks.push(currentBlock);
                     }
-                });
-                
-                setSyncedLines(synced);
+
+                    console.log('Note blocks:', noteBlocks.length);
+                    console.log('New phrases:', newPhrases.length);
+
+                    // Check for mismatch
+                    if (noteBlocks.length !== newPhrases.length) {
+                        warnings.push(`Warning: ${noteBlocks.length} note blocks but ${newPhrases.length} lyric lines. Synchronization may be imperfect.`);
+                    }
+
+                    // Count total syllables
+                    const totalNotes = noteBlocks.reduce((sum, block) => sum + block.length, 0);
+                    const totalSyllables = newPhrases.reduce((sum, phrase) => sum + phrase.length, 0);
+
+                    if (totalNotes !== totalSyllables) {
+                        warnings.push(`Warning: ${totalNotes} notes but ${totalSyllables} syllables. Some notes may be empty or unused.`);
+                    }
+
+                    // Distribute syllables across blocks
+                    const synced = [];
+                    let blockIndex = 0;
+                    let syllableIndexInBlock = 0;
+
+                    originalLines.forEach(line => {
+                        if (line.startsWith('-')) {
+                            synced.push({ type: 'break', line: line, original: '' });
+                            // Move to next block after a pause
+                            if (syllableIndexInBlock > 0) {
+                                blockIndex++;
+                                syllableIndexInBlock = 0;
+                            }
+                        } else if (line.match(/^[:*FR]/)) {
+                            const parts = line.split(' ');
+                            const type = parts[0];
+                            const start = parts[1];
+                            const duration = parts[2];
+                            const pitch = parts[3];
+                            const originalText = parts.slice(4).join(' ');
+
+                            let newText = '';
+                            if (blockIndex < newPhrases.length) {
+                                const currentPhrase = newPhrases[blockIndex];
+                                if (syllableIndexInBlock < currentPhrase.length) {
+                                    const syllableInfo = currentPhrase[syllableIndexInBlock];
+                                    newText = syllableInfo.text;
+                                    // Add space after the last syllable of each word, except if it's the last word of the phrase
+                                    if (syllableInfo.isLastInWord && !syllableInfo.isLastInPhrase) {
+                                        newText += ' ';
+                                    }
+                                }
+                                syllableIndexInBlock++;
+                            }
+
+                            const newLine = `${type} ${start} ${duration} ${pitch} ${newText}`;
+                            synced.push({ type: 'note', line: newLine, original: originalText });
+                        } else if (line.trim() === 'E') {
+                            synced.push({ type: 'end', line: line, original: '' });
+                        } else {
+                            synced.push({ type: 'other', line: line, original: '' });
+                        }
+                    });
+
+                    setSyncedLines(synced);
+                    setSyncWarnings(warnings);
+
+                    if (warnings.length === 0) {
+                        showNotification('Synchronization completed successfully!', 'success');
+                    } else {
+                        showNotification('Synchronization completed with warnings', 'warning');
+                    }
+                } catch (error) {
+                    showNotification('Error during synchronization: ' + error.message, 'error');
+                } finally {
+                    setIsLoading(false);
+                }
             };
 
             const generateOutput = () => {
-                let output = '';
-                
-                Object.keys(headerInfo).forEach(key => {
-                    if (key === 'LANGUAGE') {
-                        output += `#${key}:${editableLanguage}\n`;
-                    } else if (key === 'TITLE') {
-                        output += `#${key}:${editableTitle}\n`;
-                    } else {
-                        output += `#${key}:${headerInfo[key]}\n`;
-                    }
-                });
-                
-                syncedLines.forEach(item => {
-                    output += item.line + '\n';
-                });
-                
-                setOutputText(output);
-                setShowOutput(true);
+                try {
+                    let output = '';
+
+                    Object.keys(headerInfo).forEach(key => {
+                        if (key === 'LANGUAGE') {
+                            output += `#${key}:${editableLanguage}\n`;
+                        } else if (key === 'TITLE') {
+                            output += `#${key}:${editableTitle}\n`;
+                        } else {
+                            output += `#${key}:${headerInfo[key]}\n`;
+                        }
+                    });
+
+                    syncedLines.forEach(item => {
+                        output += item.line + '\n';
+                    });
+
+                    setOutputText(output);
+                    setShowOutput(true);
+                    showNotification('File generated successfully!', 'success');
+                } catch (error) {
+                    showNotification('Error generating file: ' + error.message, 'error');
+                }
             };
 
             const copyToClipboard = () => {
-                navigator.clipboard.writeText(outputText);
-                alert('Copied to clipboard!');
+                navigator.clipboard.writeText(outputText)
+                    .then(() => {
+                        showNotification('Copied to clipboard!', 'success');
+                    })
+                    .catch(() => {
+                        showNotification('Failed to copy to clipboard', 'error');
+                    });
             };
 
             const downloadFile = () => {
@@ -227,10 +298,9 @@
                 const link = document.createElement('a');
                 link.href = url;
                 link.download = 'song_new.txt';
-                document.body.appendChild(link);
                 link.click();
-                document.body.removeChild(link);
                 window.URL.revokeObjectURL(url);
+                showNotification('File downloaded!', 'success');
             };
 
             const updateSyncedLine = (index, newText) => {
@@ -244,6 +314,25 @@
 
             return (
                 <div className="w-full max-w-6xl mx-auto p-6 bg-gradient-to-br from-purple-50 to-pink-50 min-h-screen">
+                    {/* Toast Notification */}
+                    {notification && (
+                        <div className={`fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg transition-all duration-300 ${
+                            notification.type === 'success' ? 'bg-green-500 text-white' :
+                            notification.type === 'error' ? 'bg-red-500 text-white' :
+                            notification.type === 'warning' ? 'bg-yellow-500 text-white' :
+                            'bg-blue-500 text-white'
+                        }`}>
+                            <div className="flex items-center gap-2">
+                                <span className="text-lg">
+                                    {notification.type === 'success' ? '✓' :
+                                     notification.type === 'error' ? '✕' :
+                                     notification.type === 'warning' ? '⚠' : 'ℹ'}
+                                </span>
+                                <span>{notification.message}</span>
+                            </div>
+                        </div>
+                    )}
+
                     <div className="bg-white rounded-lg shadow-lg p-6">
                         <h1 className="text-3xl font-bold text-purple-600 mb-6">
                             UltraStar Lyrics Editor
@@ -293,10 +382,14 @@
                                             New lyrics
                                         </label>
                                         <div className="relative group">
-                                            <button className="text-purple-500 hover:text-purple-700 transition">
+                                            <button
+                                                type="button"
+                                                className="text-purple-500 hover:text-purple-700 transition focus:outline-none focus:ring-2 focus:ring-purple-500 rounded"
+                                                aria-label="Help"
+                                            >
                                                 <HelpIcon className="w-4 h-4" />
                                             </button>
-                                            <div className="absolute left-0 top-6 w-72 bg-gray-900 text-white text-xs rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-10 shadow-lg">
+                                            <div className="absolute left-0 top-6 w-72 bg-gray-900 text-white text-xs rounded-lg p-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-all duration-200 z-10 shadow-lg">
                                                 <p className="font-semibold mb-2">📝 How synchronization works:</p>
                                                 <ul className="space-y-1 mb-2">
                                                     <li>• Each line is synced with original timings</li>
@@ -363,13 +456,48 @@
                             <div className="mb-6 text-center">
                                 <button
                                     onClick={autoSync}
-                                    className="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition"
+                                    disabled={isLoading}
+                                    className={`px-6 py-3 rounded-lg font-semibold transition inline-flex items-center gap-2 ${
+                                        isLoading
+                                            ? 'bg-gray-400 cursor-not-allowed'
+                                            : 'bg-purple-600 hover:bg-purple-700 text-white'
+                                    }`}
+                                    type="button"
                                 >
-                                    🎵 Auto-sync
+                                    {isLoading ? (
+                                        <>
+                                            <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            <span>Synchronizing...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span>🎵</span>
+                                            <span>Auto-sync</span>
+                                        </>
+                                    )}
                                 </button>
                                 <p className="text-xs text-gray-600 mt-2">
                                     Lyrics will be aligned to original timings
                                 </p>
+                            </div>
+                        )}
+
+                        {syncWarnings.length > 0 && (
+                            <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded">
+                                <div className="flex items-start">
+                                    <span className="text-yellow-600 text-xl mr-3">⚠</span>
+                                    <div className="flex-1">
+                                        <h3 className="text-sm font-semibold text-yellow-800 mb-2">Synchronization Warnings</h3>
+                                        <ul className="text-sm text-yellow-700 space-y-1">
+                                            {syncWarnings.map((warning, index) => (
+                                                <li key={index}>• {warning}</li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -431,6 +559,7 @@
                         {syncedLines.length > 0 && (
                             <div className="text-center mb-6">
                                 <button
+                                    type="button"
                                     onClick={generateOutput}
                                     className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition inline-flex items-center gap-2"
                                 >
@@ -448,12 +577,14 @@
                                     </h2>
                                     <div className="flex gap-2">
                                         <button
+                                            type="button"
                                             onClick={copyToClipboard}
                                             className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition"
                                         >
                                             📋 Copy
                                         </button>
                                         <button
+                                            type="button"
                                             onClick={downloadFile}
                                             className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700 transition inline-flex items-center gap-1"
                                         >
