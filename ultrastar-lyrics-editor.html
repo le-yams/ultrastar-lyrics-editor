@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,7 +15,7 @@
     <script type="text/babel">
         const { useState } = React;
 
-        // Icônes SVG simples
+        // Simple SVG icons
         const Upload = () => (
             <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -86,10 +86,10 @@
                 const phrases = [];
                 
                 lines.forEach(line => {
-                    // Nettoyer la ligne des marqueurs de structure
+                    // Clean the line of structural markers
                     const cleanLine = line.replace(/\[.*?\]/g, '').trim();
                     if (cleanLine) {
-                        // Séparer par espaces pour obtenir les mots/syllabes
+                        // Split by spaces to get words/syllables
                         const words = cleanLine.split(/\s+/).filter(w => w.length > 0);
                         if (words.length > 0) {
                             phrases.push(words);
@@ -103,7 +103,7 @@
             const autoSync = () => {
                 const newPhrases = extractWords();
                 
-                // Grouper les lignes de notes par blocs séparés par des pauses
+                // Group note lines by blocks separated by pauses
                 const noteBlocks = [];
                 let currentBlock = [];
                 
@@ -121,10 +121,10 @@
                     noteBlocks.push(currentBlock);
                 }
                 
-                console.log('Blocs de notes:', noteBlocks.length);
-                console.log('Nouvelles phrases :', newPhrases.length);
-                
-                // Distribuer les phrases sur les blocs
+                console.log('Note blocks:', noteBlocks.length);
+                console.log('New phrases:', newPhrases.length);
+
+                // Distribute phrases across blocks
                 const synced = [];
                 let blockIndex = 0;
                 let wordIndexInBlock = 0;
@@ -132,7 +132,7 @@
                 originalLines.forEach(line => {
                     if (line.startsWith('-')) {
                         synced.push({ type: 'break', line: line, original: '' });
-                        // Passer au bloc suivant après une pause
+                        // Move to next block after a pause
                         if (wordIndexInBlock > 0) {
                             blockIndex++;
                             wordIndexInBlock = 0;
@@ -145,20 +145,20 @@
                         const pitch = parts[3];
                         const originalText = parts.slice(4).join(' ');
                         
-                        let frenchText = '';
+                        let newText = '';
                         if (blockIndex < newPhrases.length) {
                             const currentPhrase = newPhrases[blockIndex];
                             if (wordIndexInBlock < currentPhrase.length) {
-                                frenchText = currentPhrase[wordIndexInBlock];
-                                // Ajouter un espace après chaque mot sauf le dernier de la phrase
+                                newText = currentPhrase[wordIndexInBlock];
+                                // Add space after each word except the last in the phrase
                                 if (wordIndexInBlock < currentPhrase.length - 1) {
-                                    frenchText += ' ';
+                                    newText += ' ';
                                 }
                             }
                             wordIndexInBlock++;
                         }
                         
-                        const newLine = `${type} ${start} ${duration} ${pitch} ${frenchText}`;
+                        const newLine = `${type} ${start} ${duration} ${pitch} ${newText}`;
                         synced.push({ type: 'note', line: newLine, original: originalText });
                     } else if (line.trim() === 'E') {
                         synced.push({ type: 'end', line: line, original: '' });
@@ -191,7 +191,7 @@
 
             const copyToClipboard = () => {
                 navigator.clipboard.writeText(outputText);
-                alert('Copié dans le presse-papiers !');
+                alert('Copied to clipboard!');
             };
 
             const downloadFile = () => {
@@ -199,7 +199,7 @@
                 const url = window.URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = 'song_french.txt';
+                link.download = 'song_new.txt';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
@@ -219,7 +219,7 @@
                 <div className="w-full max-w-6xl mx-auto p-6 bg-gradient-to-br from-purple-50 to-pink-50 min-h-screen">
                     <div className="bg-white rounded-lg shadow-lg p-6">
                         <h1 className="text-3xl font-bold text-purple-600 mb-6">
-                            Outil de Synchronisation UltraStar
+                            UltraStar Sync Tool
                         </h1>
                         
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -229,7 +229,7 @@
                                         <Upload />
                                     </div>
                                     <span className="text-sm font-medium text-gray-700 mb-2">
-                                        Charger le fichier UltraStar original
+                                        Load Original UltraStar File
                                     </span>
                                     <input
                                         type="file"
@@ -238,7 +238,7 @@
                                         className="hidden"
                                     />
                                     <span className="text-xs text-gray-500">
-                                        {originalLines.length > 0 ? `${originalLines.length} lignes chargées` : 'Aucun fichier'}
+                                        {originalLines.length > 0 ? `${originalLines.length} lines loaded` : 'No file'}
                                     </span>
                                 </label>
                             </div>
@@ -246,10 +246,10 @@
                             <div className="border-2 border-purple-300 rounded-lg p-4">
                                 <div className="flex items-center justify-between mb-2">
                                     <label className="text-sm font-medium text-gray-700">
-                                        Nouvelles Paroles
+                                        New Lyrics
                                     </label>
                                     <label className="cursor-pointer bg-purple-500 text-white px-3 py-1 rounded text-xs hover:bg-purple-600 transition">
-                                        📁 Charger fichier
+                                        📁 Load file
                                         <input
                                             type="file"
                                             accept=".txt"
@@ -260,7 +260,7 @@
                                 </div>
                                 <textarea
                                     className="w-full h-32 p-2 border border-gray-300 rounded text-sm"
-                                    placeholder="Collez vos nouvelles paroles ici ou chargez un fichier..."
+                                    placeholder="Paste your new lyrics here or load a file..."
                                     value={newLyrics}
                                     onChange={handleNewLyricsChange}
                                 />
@@ -273,10 +273,10 @@
                                     onClick={autoSync}
                                     className="bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition"
                                 >
-                                    🎵 Synchroniser automatiquement
+                                    🎵 Auto-sync
                                 </button>
                                 <p className="text-xs text-gray-600 mt-2">
-                                    Les paroles seront alignées sur les timings originaux
+                                    Lyrics will be aligned to original timings
                                 </p>
                             </div>
                         )}
@@ -284,7 +284,7 @@
                         {syncedLines.length > 0 && (
                             <div className="mb-6">
                                 <h2 className="text-xl font-semibold text-purple-600 mb-3">
-                                    Prévisualisation et Édition
+                                    Preview and Edit
                                 </h2>
                                 <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
                                     {syncedLines.map((item, index) => {
@@ -320,7 +320,7 @@
                                                         value={text}
                                                         onChange={(e) => updateSyncedLine(index, e.target.value)}
                                                         className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
-                                                        placeholder="Entrez le texte..."
+                                                        placeholder="Enter text..."
                                                     />
                                                 </div>
                                             );
@@ -343,7 +343,7 @@
                                     className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition inline-flex items-center gap-2"
                                 >
                                     <Download className="w-5 h-5" />
-                                    Générer le fichier final
+                                    Generate Final File
                                 </button>
                             </div>
                         )}
@@ -352,21 +352,21 @@
                             <div className="mb-6">
                                 <div className="flex items-center justify-between mb-2">
                                     <h2 className="text-xl font-semibold text-purple-600">
-                                        Fichier UltraStar
+                                        UltraStar File
                                     </h2>
                                     <div className="flex gap-2">
                                         <button
                                             onClick={copyToClipboard}
                                             className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition"
                                         >
-                                            📋 Copier
+                                            📋 Copy
                                         </button>
                                         <button
                                             onClick={downloadFile}
                                             className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700 transition inline-flex items-center gap-1"
                                         >
                                             <Download className="w-4 h-4" />
-                                            Télécharger
+                                            Download
                                         </button>
                                     </div>
                                 </div>
@@ -376,7 +376,7 @@
                                     className="w-full h-96 p-4 border-2 border-green-300 rounded-lg font-mono text-xs bg-gray-50"
                                 />
                                 <p className="text-sm text-gray-600 mt-2">
-                                    ✅ Copiez ou téléchargez ce fichier pour l'utiliser avec UltraStar
+                                    ✅ Copy or download this file to use with UltraStar
                                 </p>
                             </div>
                         )}
@@ -384,11 +384,11 @@
                         <div className="mt-8 bg-blue-50 rounded-lg p-4">
                             <h3 className="font-semibold text-blue-900 mb-2">📋 Instructions</h3>
                             <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-                                <li>Chargez votre fichier UltraStar original</li>
-                                <li>Collez les nouvelles paroles dans la zone de texte</li>
-                                <li>Cliquez sur "Synchroniser automatiquement"</li>
-                                <li>Vérifiez et ajustez manuellement si nécessaire</li>
-                                <li>Générez et copiez le fichier synchronisé</li>
+                                <li>Load your original UltraStar file</li>
+                                <li>Paste the new lyrics in the text area</li>
+                                <li>Click "Auto-sync"</li>
+                                <li>Review and adjust manually if necessary</li>
+                                <li>Generate and copy the synchronized file</li>
                             </ol>
                         </div>
                     </div>
