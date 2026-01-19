@@ -58,6 +58,13 @@ This editor allows you to create a new UltraStar song file by synchronizing new 
 
 The editor automatically synchronizes your new lyrics with the existing timings from the original UltraStar file. Each line of new lyrics is mapped to a corresponding phrase (note block) in the original file.
 
+### Loading Original Lyrics
+
+If you want to edit or translate the original lyrics while preserving the syllable structure, you can use the **"📄 Load original"** button in the new lyrics section. This will automatically load the original lyrics with syllable separators (`|`) already in place, making it easier to:
+- Translate lyrics while maintaining the exact syllable count
+- Make small corrections to existing lyrics
+- Understand the syllable structure of the original song
+
 ### Syllable Separator
 
 You can use the `|` character to split words into syllables in your new lyrics.
