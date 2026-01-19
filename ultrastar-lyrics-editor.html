@@ -63,12 +63,18 @@
                     const noteLines = [];
 
                     lines.forEach(line => {
-                        const trimmedLine = line.trim();
+                        // Remove only line breaks (CR/LF) but keep spaces
+                        const cleanLine = line.replace(/[\r\n]+$/, '');
+                        const trimmedLine = cleanLine.trim();
+
                         if (trimmedLine.startsWith('#')) {
                             const [key, ...valueParts] = trimmedLine.substring(1).split(':');
                             header[key.trim()] = valueParts.join(':').trim();
                         } else if (trimmedLine.match(/^[:*FR-]/) || trimmedLine === 'E') {
-                            noteLines.push(trimmedLine);
+                            // For note lines, use cleanLine (not trimmedLine) to preserve trailing spaces
+                            if (cleanLine.match(/^[:*FR-]/) || cleanLine === 'E') {
+                                noteLines.push(cleanLine);
+                            }
                         }
                     });
 
@@ -183,16 +189,69 @@
 
                     originalLines.forEach(line => {
                         if (line.match(/^[:*FR]/)) {
-                            // Extract the text from the note line
-                            const parts = line.split(' ');
-                            const text = parts.slice(4).join(' ').trim();
-                            if (text) {
+                            // DEBUG: Log the raw line
+                            console.log(`Raw line: "${line}" (length: ${line.length})`);
+                            console.log(`Last 5 chars codes:`, Array.from(line.slice(-5)).map(c => c.charCodeAt(0)));
+
+                            // Parse note line according to UltraStar specification:
+                            // Format: "NoteType StartBeat Length Pitch Text"
+                            // We need to find 4 spaces and take everything after the 4th space as text
+                            let spaceCount = 0;
+                            let textStartIndex = -1;
+
+                            for (let i = 0; i < line.length; i++) {
+                                if (line[i] === ' ') {
+                                    spaceCount++;
+                                    if (spaceCount === 4) {
+                                        textStartIndex = i + 1;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            if (textStartIndex >= 0) {
+                                // Extract text from after the 4th space to the end (preserve all spaces!)
+                                const text = line.substring(textStartIndex);
+                                console.log(`Parsed syllable: "${text}" (length: ${text.length}, ends with space: ${text.endsWith(' ')})`);
+                                console.log(`Text char codes:`, Array.from(text).map(c => c.charCodeAt(0)));
                                 currentPhrase.push(text);
+                            } else {
+                                // No text (line doesn't have 4 spaces)
+                                console.log(`Parsed syllable: "" (length: 0, ends with space: false)`);
+                                currentPhrase.push('');
                             }
                         } else if (line.startsWith('-')) {
                             // End of phrase
                             if (currentPhrase.length > 0) {
-                                phrases.push(currentPhrase.join('|'));
+                                console.log('Building phrase from:', currentPhrase);
+                                // Join syllables properly:
+                                // - If a syllable ends with space, keep it (it's the end of a word)
+                                // - Otherwise add | separator (same word continues)
+                                let phraseText = '';
+                                currentPhrase.forEach((syllable, index) => {
+                                    if (index === 0) {
+                                        // First syllable: just add it as is
+                                        phraseText = syllable;
+                                    } else {
+                                        // For subsequent syllables:
+                                        // Check if the PREVIOUS syllable ended with a space
+                                        const prevSyllable = currentPhrase[index - 1];
+                                        if (prevSyllable.endsWith(' ') || prevSyllable === '') {
+                                            // Previous syllable ended with space (end of word) or was empty
+                                            // Just concatenate current syllable (space is already there)
+                                            phraseText += syllable;
+                                        } else {
+                                            // Previous syllable didn't end with space (same word continues)
+                                            // Add | separator before current syllable
+                                            phraseText += '|' + syllable;
+                                        }
+                                    }
+                                });
+                                console.log(`Phrase before trimEnd: "${phraseText}"`);
+                                // Remove trailing spaces only (spaces in the middle are word separators)
+                                const finalPhrase = phraseText.trimEnd();
+                                console.log(`Phrase after trimEnd: "${finalPhrase}"`);
+                                phrases.push(finalPhrase);
                                 currentPhrase = [];
                             }
                         }
@@ -200,7 +259,20 @@
 
                     // Add last phrase if any
                     if (currentPhrase.length > 0) {
-                        phrases.push(currentPhrase.join('|'));
+                        let phraseText = '';
+                        currentPhrase.forEach((syllable, index) => {
+                            if (index === 0) {
+                                phraseText = syllable;
+                            } else {
+                                const prevSyllable = currentPhrase[index - 1];
+                                if (prevSyllable.endsWith(' ') || prevSyllable === '') {
+                                    phraseText += syllable;
+                                } else {
+                                    phraseText += '|' + syllable;
+                                }
+                            }
+                        });
+                        phrases.push(phraseText.trimEnd());
                     }
 
                     const lyricsText = phrases.join('\n');
@@ -300,12 +372,27 @@
                                 syllableIndexInBlock = 0;
                             }
                         } else if (line.match(/^[:*FR]/)) {
-                            const parts = line.split(' ');
-                            const type = parts[0];
-                            const start = parts[1];
-                            const duration = parts[2];
-                            const pitch = parts[3];
-                            const originalText = parts.slice(4).join(' ');
+                            // Parse note line according to UltraStar specification:
+                            // Format: "NoteType StartBeat Length Pitch Text"
+                            // Find the 4 spaces that separate the 5 fields
+                            let spaceCount = 0;
+                            let spacePositions = [];
+
+                            for (let i = 0; i < line.length; i++) {
+                                if (line[i] === ' ') {
+                                    spaceCount++;
+                                    spacePositions.push(i);
+                                    if (spaceCount === 4) break;
+                                }
+                            }
+
+                            if (spacePositions.length < 4) return;
+
+                            const type = line.substring(0, spacePositions[0]);
+                            const start = line.substring(spacePositions[0] + 1, spacePositions[1]);
+                            const duration = line.substring(spacePositions[1] + 1, spacePositions[2]);
+                            const pitch = line.substring(spacePositions[2] + 1, spacePositions[3]);
+                            const originalText = line.substring(spacePositions[3] + 1);
 
                             let newText = '';
                             if (blockIndex < newPhrases.length) {
@@ -697,12 +784,31 @@
                                         }
                                         
                                         if (item.type === 'note') {
-                                            const parts = item.line.split(' ');
-                                            const text = parts.slice(4).join(' ');
+                                            // Parse note line according to UltraStar specification
+                                            let spaceCount = 0;
+                                            let spacePositions = [];
+
+                                            for (let i = 0; i < item.line.length; i++) {
+                                                if (item.line[i] === ' ') {
+                                                    spaceCount++;
+                                                    spacePositions.push(i);
+                                                    if (spaceCount === 4) break;
+                                                }
+                                            }
+
+                                            let type = '', start = '', text = '';
+                                            if (spacePositions.length >= 2) {
+                                                type = item.line.substring(0, spacePositions[0]);
+                                                start = item.line.substring(spacePositions[0] + 1, spacePositions[1]);
+                                            }
+                                            if (spacePositions.length >= 4) {
+                                                text = item.line.substring(spacePositions[3] + 1);
+                                            }
+
                                             return (
                                                 <div key={index} className="flex items-center gap-2 py-1">
                                                     <span className="text-xs text-gray-500 w-16 flex-shrink-0">
-                                                        {parts[0]} {parts[1]}
+                                                        {type} {start}
                                                     </span>
                                                     <span className="text-xs text-blue-600 w-32 flex-shrink-0 italic truncate" title={item.original}>
                                                         {item.original}

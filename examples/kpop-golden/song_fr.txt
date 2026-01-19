@@ -8,7 +8,7 @@
 #YEAR:2025
 #LANGUAGE:French
 #BPM:246
-#GAP:19560
+#GAP:16190
 #VIDEO:video.mp4
 : 0 1 7 Dans 
 : 2 1 9 le 
