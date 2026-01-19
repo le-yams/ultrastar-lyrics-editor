@@ -41,6 +41,9 @@
             const [headerInfo, setHeaderInfo] = useState({});
             const [editableTitle, setEditableTitle] = useState('');
             const [editableLanguage, setEditableLanguage] = useState('');
+            const [gapMinutes, setGapMinutes] = useState(0);
+            const [gapSeconds, setGapSeconds] = useState(0);
+            const [gapMilliseconds, setGapMilliseconds] = useState(0);
             const [outputText, setOutputText] = useState('');
             const [showOutput, setShowOutput] = useState(false);
             const [notification, setNotification] = useState(null);
@@ -76,6 +79,16 @@
                     setHeaderInfo(header);
                     setEditableTitle(header.TITLE || '');
                     setEditableLanguage(header.LANGUAGE || '');
+
+                    // Parse GAP value (in milliseconds) and convert to minutes, seconds, milliseconds
+                    const gapValue = parseInt(header.GAP || '0', 10);
+                    const minutes = Math.floor(gapValue / 60000);
+                    const seconds = Math.floor((gapValue % 60000) / 1000);
+                    const milliseconds = gapValue % 1000;
+                    setGapMinutes(minutes);
+                    setGapSeconds(seconds);
+                    setGapMilliseconds(milliseconds);
+
                     setOriginalLines(noteLines);
                     showNotification(`File loaded: ${noteLines.length} lines`, 'success');
                     return noteLines;
@@ -260,15 +273,28 @@
                 try {
                     let output = '';
 
+                    // Calculate GAP value in milliseconds
+                    const totalGapMs = (gapMinutes * 60000) + (gapSeconds * 1000) + gapMilliseconds;
+
                     Object.keys(headerInfo).forEach(key => {
                         if (key === 'LANGUAGE') {
                             output += `#${key}:${editableLanguage}\n`;
                         } else if (key === 'TITLE') {
                             output += `#${key}:${editableTitle}\n`;
+                        } else if (key === 'GAP') {
+                            // Only include GAP if the value is not 0
+                            if (totalGapMs !== 0) {
+                                output += `#${key}:${totalGapMs}\n`;
+                            }
                         } else {
                             output += `#${key}:${headerInfo[key]}\n`;
                         }
                     });
+
+                    // If GAP was not in the original file but has a non-zero value, add it
+                    if (!headerInfo.GAP && totalGapMs !== 0) {
+                        output += `#GAP:${totalGapMs}\n`;
+                    }
 
                     syncedLines.forEach(item => {
                         output += item.line + '\n';
@@ -423,7 +449,7 @@
 
                         {originalLines.length > 0 && (
                             <div className="mb-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Song Title
@@ -448,6 +474,51 @@
                                             placeholder="Enter language..."
                                         />
                                     </div>
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        GAP (delay before the song starts)
+                                    </label>
+                                    <div className="flex gap-2 items-center">
+                                        <div className="flex-1">
+                                            <label className="block text-xs text-gray-600 mb-1">Minutes</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                value={gapMinutes}
+                                                onChange={(e) => setGapMinutes(Math.max(0, parseInt(e.target.value) || 0))}
+                                                className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="block text-xs text-gray-600 mb-1">Seconds</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="59"
+                                                value={gapSeconds}
+                                                onChange={(e) => setGapSeconds(Math.max(0, Math.min(59, parseInt(e.target.value) || 0)))}
+                                                className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="block text-xs text-gray-600 mb-1">Milliseconds</label>
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                max="999"
+                                                value={gapMilliseconds}
+                                                onChange={(e) => setGapMilliseconds(Math.max(0, Math.min(999, parseInt(e.target.value) || 0)))}
+                                                className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                                placeholder="0"
+                                            />
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Total: {(gapMinutes * 60000) + (gapSeconds * 1000) + gapMilliseconds} ms
+                                    </p>
                                 </div>
                             </div>
                         )}

@@ -19,7 +19,7 @@ This editor allows you to create a new UltraStar song file by synchronizing new 
 - **Real-time feedback**: Visual notifications for every action (success, error, or warning)
 
 ### ✏️ Easy Editing
-- **Song metadata**: Edit title and language directly in the interface
+- **Song metadata**: Edit title, language, and GAP (start delay) directly in the interface
 - **Manual adjustments**: Fine-tune synchronized lyrics before generating the final file
 - **Preview mode**: Review all changes before saving
 
@@ -46,7 +46,7 @@ This editor allows you to create a new UltraStar song file by synchronizing new 
 1. Open the `ultrastar-lyrics-editor.html` file in your web browser
 2. Load an existing UltraStar song file (.txt) by clicking on the upload area
 3. Enter or paste the new lyrics in the text area (or load a lyrics file)
-4. Optionally edit the song title and language in the provided fields
+4. Optionally edit the song title, language, and GAP (start delay) in the provided fields
 5. Click "Auto-sync" to automatically align the lyrics with existing timings
 6. Review the synchronized lyrics in the preview section
 7. Make manual adjustments if necessary by editing individual lines
@@ -83,6 +83,32 @@ The editor automatically detects potential synchronization issues and displays w
 - **Syllable count mismatch**: When the total number of syllables doesn't match the total number of notes
 
 These warnings help you identify potential issues before generating the final file, allowing you to adjust your lyrics or review the synchronization manually.
+
+
+## GAP Adjustment
+
+The **GAP** metadata defines the delay (in milliseconds) before the song starts. This is useful when you need to synchronize the lyrics with the audio track.
+
+### Editing the GAP Value
+
+The editor provides three separate input fields for easier GAP management:
+- **Minutes**: The number of minutes
+- **Seconds**: The number of seconds (0-59)
+- **Milliseconds**: The number of milliseconds (0-999)
+
+The total GAP value in milliseconds is automatically calculated and displayed below the input fields.
+
+**Example:** For a GAP of 1 minute, 37 seconds, and 48 milliseconds:
+- Minutes: `1`
+- Seconds: `37`
+- Milliseconds: `48`
+- Total: `97048` ms
+
+### Default Behavior
+
+- If the original UltraStar file doesn't have a GAP metadata, the default value is `0` (no delay)
+- If you set the GAP value to `0`, it will **not be included** in the generated file (cleaner output)
+- If you set a non-zero value, it will be included in the generated file with the calculated milliseconds value
 
 
 ## Notifications
