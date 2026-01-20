@@ -38,16 +38,43 @@ This editor allows you to create a new UltraStar song file by synchronizing new 
 ## Usage
 
 ### Requirements
+- Node.js (v18 or higher)
+- npm (comes with Node.js)
 - A modern web browser (Chrome, Firefox, Edge, Safari)
-- **Active internet connection** (required to load React and Tailwind CSS libraries)
 
-### How to Use
+### Installation
 
-1. Open the `ultrastar-lyrics-editor.html` file in your web browser
-2. Load an existing UltraStar song file (.txt) by clicking on the upload area
-3. Enter or paste the new lyrics in the text area (or load a lyrics file)
-4. Optionally edit the song title, language, and GAP (start delay) in the provided fields
-5. Click "Auto-sync" to automatically align the lyrics with existing timings
+```bash
+# Clone the repository or download the files
+# Navigate to the project directory
+cd ultrastar-lyrics-editor
+
+# Install dependencies
+npm install
+```
+
+### Running the Application
+
+#### Development Mode
+```bash
+npm run dev
+# Open http://localhost:5173 in your browser
+```
+
+#### Production Build
+```bash
+npm run build
+# Files will be in the dist/ directory
+```
+
+### How to Use the Editor
+
+1. Start the development server with `npm run dev`
+2. Open http://localhost:5173 in your browser
+3. Load an existing UltraStar song file (.txt) by clicking on the upload area or drag-and-drop
+4. Enter or paste the new lyrics in the text area (or load a lyrics file)
+5. Optionally edit the song title, language, and GAP (start delay) in the provided fields
+6. Click "Auto-sync" to automatically align the lyrics with existing timings
 6. Review the synchronized lyrics in the preview section
 7. Make manual adjustments if necessary by editing individual lines
 8. Click "Generate Final File" to create the new UltraStar file
@@ -127,4 +154,64 @@ The editor provides visual feedback for all operations:
 - ℹ️ **Info notifications** (blue): General information messages
 
 All notifications automatically dismiss after 3 seconds, keeping your workspace clean.
+
+
+## Testing
+
+The project includes a comprehensive test suite with **89 unit tests** covering **97.36%** of the codebase.
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+```
+
+### Test Coverage
+
+| Module | Tests | Coverage |
+|--------|-------|----------|
+| UltraStarParser | 24 | 100% |
+| TimeConverter | 30 | 100% |
+| LyricsProcessor | 21 | 98.24% |
+| LyricsSynchronizer | 11 | 95.45% |
+| FileManager | 13 | 100% |
+| **TOTAL** | **89** | **97.36%** |
+
+For more information on testing, see [TESTING_GUIDE.md](TESTING_GUIDE.md).
+
+
+## Architecture
+
+The application is built with a modular architecture:
+
+```
+src/
+├── App.jsx                # Main React application
+├── main.jsx              # Entry point
+├── constants.js          # Configuration and constants
+├── ultraStarParser.js    # UltraStar format parsing
+├── timeConverter.js      # Time conversion utilities
+├── lyricsProcessor.js    # Lyrics processing and syllable extraction
+├── lyricsSynchronizer.js # Synchronization logic
+└── fileManager.js        # File parsing and generation
+```
+
+Each module is independently tested and can be reused in other projects.
+
+
+## Documentation
+
+- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Guide for running and writing tests
+- [TEST_SPECIFICATIONS.md](TEST_SPECIFICATIONS.md) - Detailed test specifications
+- [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) - Project structure overview
+- [MIGRATION_COMPLETE.md](MIGRATION_COMPLETE.md) - Migration to Vite documentation
+
+
 

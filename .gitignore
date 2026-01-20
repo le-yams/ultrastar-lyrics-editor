@@ -2,3 +2,15 @@
 # JetBrains IDEs
 .idea
 *.iml
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+# Test coverage
+coverage/
+.nyc_output/
+.jest-cache/
+
+# Vite
+dist/
