@@ -627,6 +627,17 @@ export default function UltraStarLyricsEditor() {
                     UltraStar Lyrics Editor
                 </h1>
 
+                <div className="mb-6 bg-blue-50 rounded-lg p-4">
+                    <h3 className="font-semibold text-blue-900 mb-2">📋 Instructions</h3>
+                    <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+                        <li>Load your original UltraStar file</li>
+                        <li>Paste the new lyrics in the text area</li>
+                        <li>Click "Synchronize"</li>
+                        <li>Review and adjust manually if necessary</li>
+                        <li>Generate and download or copy the synchronized file</li>
+                    </ol>
+                </div>
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <FileUploadZone
                         onFileLoad={handleOriginalFileUpload}
@@ -729,17 +740,6 @@ export default function UltraStarLyricsEditor() {
                         </div>
                     </div>
                 )}
-
-                <div className="mt-8 bg-blue-50 rounded-lg p-4">
-                    <h3 className="font-semibold text-blue-900 mb-2">📋 Instructions</h3>
-                    <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
-                        <li>Load your original UltraStar file</li>
-                        <li>Paste the new lyrics in the text area</li>
-                        <li>Click "Synchronize"</li>
-                        <li>Review and adjust manually if necessary</li>
-                        <li>Generate and download or copy the synchronized file</li>
-                    </ol>
-                </div>
             </div>
         </div>
     );
