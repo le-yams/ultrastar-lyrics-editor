@@ -22,6 +22,7 @@ This editor allows you to create a new UltraStar song file by synchronizing new 
 - **Song metadata**: Edit title, language, and GAP (start delay) directly in the interface
 - **Manual adjustments**: Fine-tune synchronized lyrics before generating the final file
 - **Preview mode**: Review all changes before saving
+- **Timing display**: View the timing (MM:SS) for the first note of each phrase in the preview
 
 ### 💾 Multiple Output Options
 - **Generate and download**: Generate and automatically download the synchronized file in one click

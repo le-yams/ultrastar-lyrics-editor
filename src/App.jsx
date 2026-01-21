@@ -271,8 +271,24 @@ const GapEditor = ({ minutes, seconds, milliseconds, onMinutesChange, onSecondsC
 // ============================================================================
 // SYNC PREVIEW COMPONENT
 // ============================================================================
-const SyncPreview = ({ syncedLines, onLineUpdate }) => {
+const SyncPreview = ({ syncedLines, onLineUpdate, bpm, gapMs }) => {
     if (syncedLines.length === 0) return null;
+
+    // Déterminer quelles lignes sont la première note d'une phrase
+    const isFirstNoteOfPhrase = (index) => {
+        if (syncedLines[index].type !== 'note') return false;
+
+        // Première note du fichier
+        if (index === 0) return true;
+
+        // Première note après un break
+        for (let i = index - 1; i >= 0; i--) {
+            if (syncedLines[i].type === 'break') return true;
+            if (syncedLines[i].type === 'note') return false;
+        }
+
+        return false;
+    };
 
     return (
         <div className="mb-6">
@@ -301,8 +317,20 @@ const SyncPreview = ({ syncedLines, onLineUpdate }) => {
                         const parsed = UltraStarParser.parseNoteLine(item.line);
                         if (!parsed) return null;
 
+                        const isFirstNote = isFirstNoteOfPhrase(index);
+                        const timing = isFirstNote && bpm
+                            ? TimeConverter.beatToTime(parsed.start, bpm, gapMs)
+                            : null;
+
                         return (
                             <div key={index} className="flex items-center gap-2 py-1">
+                                {timing ? (
+                                    <span className="text-xs font-mono text-purple-600 w-12 flex-shrink-0 font-semibold">
+                                        {TimeConverter.formatTime(timing.minutes, timing.seconds)}
+                                    </span>
+                                ) : (
+                                    <span className="w-12 flex-shrink-0"></span>
+                                )}
                                 <span className="text-xs text-gray-500 w-16 flex-shrink-0">
                                     {parsed.type} {parsed.start}
                                 </span>
@@ -675,6 +703,8 @@ export default function UltraStarLyricsEditor() {
                 <SyncPreview
                     syncedLines={fileData.syncedLines}
                     onLineUpdate={updateSyncedLine}
+                    bpm={fileData.headerInfo.BPM ? parseFloat(fileData.headerInfo.BPM) : null}
+                    gapMs={TimeConverter.componentsToMs(metadata.gapMinutes, metadata.gapSeconds, metadata.gapMilliseconds)}
                 />
 
                 {fileData.syncedLines.length > 0 && (

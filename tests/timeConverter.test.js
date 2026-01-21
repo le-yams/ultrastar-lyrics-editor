@@ -112,3 +112,88 @@ describe('TimeConverter - validateComponents', () => {
         expect(TimeConverter.validateComponents(1, 0, 0)).toBe(true);
     });
 });
+
+describe('TimeConverter - beatToTime', () => {
+    test('converts beat 0 with BPM 120 and no GAP', () => {
+        const result = TimeConverter.beatToTime(0, 120, 0);
+        expect(result).toEqual({ minutes: 0, seconds: 0 });
+    });
+
+    test('converts beat 480 with BPM 120 and no GAP', () => {
+        // 480 beats * 60 / 120 / 4 = 60 seconds = 1 minute
+        const result = TimeConverter.beatToTime(480, 120, 0);
+        expect(result).toEqual({ minutes: 1, seconds: 0 });
+    });
+
+    test('converts beat 240 with BPM 120 and no GAP', () => {
+        // 240 beats * 60 / 120 / 4 = 30 seconds
+        const result = TimeConverter.beatToTime(240, 120, 0);
+        expect(result).toEqual({ minutes: 0, seconds: 30 });
+    });
+
+    test('applies GAP offset correctly', () => {
+        // 0 beats + 5000 ms GAP = 5 seconds
+        const result = TimeConverter.beatToTime(0, 120, 5000);
+        expect(result).toEqual({ minutes: 0, seconds: 5 });
+    });
+
+    test('combines beat and GAP', () => {
+        // 240 beats (30s) + 5000 ms GAP = 35 seconds
+        const result = TimeConverter.beatToTime(240, 120, 5000);
+        expect(result).toEqual({ minutes: 0, seconds: 35 });
+    });
+
+    test('handles different BPM values', () => {
+        // 240 beats * 60 / 60 / 4 = 60 seconds
+        const result = TimeConverter.beatToTime(240, 60, 0);
+        expect(result).toEqual({ minutes: 1, seconds: 0 });
+    });
+
+    test('returns null for invalid BPM (0)', () => {
+        const result = TimeConverter.beatToTime(100, 0, 0);
+        expect(result).toBeNull();
+    });
+
+    test('returns null for invalid BPM (negative)', () => {
+        const result = TimeConverter.beatToTime(100, -120, 0);
+        expect(result).toBeNull();
+    });
+
+    test('returns null for missing BPM', () => {
+        const result = TimeConverter.beatToTime(100, null, 0);
+        expect(result).toBeNull();
+    });
+
+    test('handles fractional seconds correctly (floors them)', () => {
+        // 120 beats * 60 / 120 / 4 = 15 seconds
+        const result = TimeConverter.beatToTime(120, 120, 0);
+        expect(result).toEqual({ minutes: 0, seconds: 15 });
+    });
+});
+
+describe('TimeConverter - formatTime', () => {
+    test('formats 0:0 as 00:00', () => {
+        expect(TimeConverter.formatTime(0, 0)).toBe('00:00');
+    });
+
+    test('formats 1:30 as 01:30', () => {
+        expect(TimeConverter.formatTime(1, 30)).toBe('01:30');
+    });
+
+    test('formats 0:5 as 00:05', () => {
+        expect(TimeConverter.formatTime(0, 5)).toBe('00:05');
+    });
+
+    test('formats 10:59 as 10:59', () => {
+        expect(TimeConverter.formatTime(10, 59)).toBe('10:59');
+    });
+
+    test('formats 99:99 as 99:99', () => {
+        expect(TimeConverter.formatTime(99, 99)).toBe('99:99');
+    });
+
+    test('formats single digit values with leading zeros', () => {
+        expect(TimeConverter.formatTime(5, 9)).toBe('05:09');
+    });
+});
+
