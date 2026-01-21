@@ -1,50 +1,96 @@
-﻿// ============================================================================
+﻿import { TimeConverter } from './timeConverter.js';
+
+// ============================================================================
 // FILE MANAGEMENT - Parser and Generator
 // ============================================================================
-export const FileManager = {
-    parseFile(content) {
-        const lines = content.split(/\r?\n/);
-        const metadata = {};
-        const noteLines = [];
 
-        lines.forEach(line => {
-            if (line.trim().startsWith('#')) {
-                const match = line.match(/#([^:]+):(.+)/);
-                if (match) {
-                    metadata[match[1]] = match[2];
-                }
-            } else if (line.trim() && !line.trim().startsWith('#')) {
-                noteLines.push(line);
+/**
+ * Parses an UltraStar file content
+ * @param {string} content - The file content
+ * @param {Object} ultraStarParser - UltraStarParser object with utility methods
+ * @param {string} endMarker - The end marker string (typically 'E')
+ * @returns {Object} Object with header and noteLines
+ */
+export function parseFile(content, ultraStarParser, endMarker) {
+    const lines = content.split('\n');
+    const header = {};
+    const noteLines = [];
+
+    lines.forEach(line => {
+        const cleanLine = line.replace(/[\r\n]+$/, '');
+        const trimmedLine = cleanLine.trim();
+
+        if (ultraStarParser.isHeaderLine(trimmedLine)) {
+            const [key, ...valueParts] = trimmedLine.substring(1).split(':');
+            header[key.trim()] = valueParts.join(':').trim();
+        } else if (trimmedLine.match(/^[:*FR-]/) || trimmedLine === endMarker) {
+            if (cleanLine.match(/^[:*FR-]/) || cleanLine === endMarker) {
+                noteLines.push(cleanLine);
             }
-        });
+        }
+    });
 
-        return { metadata, noteLines };
-    },
+    return { header, noteLines };
+}
 
-    generateFile(metadata, syncedLines) {
-        const lines = [];
+/**
+ * Generates an UltraStar file content
+ * @param {Object} headerInfo - Original header information
+ * @param {Object} metadata - Current metadata state (title, language, gap components)
+ * @param {Array} syncedLines - Array of synced line objects
+ * @returns {string} The generated file content
+ */
+export function generateFile(headerInfo, metadata, syncedLines) {
+    let output = '';
 
-        // Add metadata
-        Object.entries(metadata).forEach(([key, value]) => {
-            if (key === 'GAP' && value === '0') {
-                return; // Skip GAP if 0
+    const totalGapMs = TimeConverter.componentsToMs(
+        metadata.gapMinutes,
+        metadata.gapSeconds,
+        metadata.gapMilliseconds
+    );
+
+    // Generate metadata lines
+    Object.keys(headerInfo).forEach(key => {
+        if (key === 'LANGUAGE') {
+            output += `#${key}:${metadata.language}\n`;
+        } else if (key === 'TITLE') {
+            output += `#${key}:${metadata.title}\n`;
+        } else if (key === 'GAP') {
+            if (totalGapMs !== 0) {
+                output += `#${key}:${totalGapMs}\n`;
             }
-            lines.push(`#${key}:${value}`);
-        });
+        } else {
+            output += `#${key}:${headerInfo[key]}\n`;
+        }
+    });
 
-        // Add empty line after metadata
-        lines.push('');
-
-        // Add synced lines
-        syncedLines.forEach(item => {
-            lines.push(item.line);
-        });
-
-        return lines.join('\n');
-    },
-
-    extractMetadata(content, key, defaultValue = '') {
-        const match = content.match(new RegExp(`#${key}:(.+)`, 'm'));
-        return match ? match[1].trim() : defaultValue;
+    // Add GAP if it wasn't in original header but is set to non-zero
+    if (!headerInfo.GAP && totalGapMs !== 0) {
+        output += `#GAP:${totalGapMs}\n`;
     }
+
+    // Add synced lines
+    syncedLines.forEach(item => {
+        output += item.line + '\n';
+    });
+
+    return output;
+}
+
+/**
+ * Extracts a specific metadata value from file content
+ * @param {string} content - The file content
+ * @param {string} key - The metadata key to extract
+ * @param {string} defaultValue - Default value if not found
+ * @returns {string} The extracted value or default
+ */
+export function extractMetadata(content, key, defaultValue = '') {
+    const match = content.match(new RegExp(`#${key}:(.+)`, 'm'));
+    return match ? match[1].trim() : defaultValue;
+}
+
+export const FileManager = {
+    parseFile,
+    generateFile,
+    extractMetadata
 };

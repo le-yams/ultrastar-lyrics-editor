@@ -1,4 +1,7 @@
 ﻿import { FileManager } from '../src/fileManager.js';
+import { UltraStarParser } from '../src/ultraStarParser.js';
+
+const END_MARKER = 'E';
 
 describe('FileManager - parseFile', () => {
     test('parses complete valid file', () => {
@@ -9,12 +12,12 @@ describe('FileManager - parseFile', () => {
 : 10 5 3 Hello
 : 15 5 3 World
 E`;
-        const result = FileManager.parseFile(content);
+        const result = FileManager.parseFile(content, UltraStarParser, END_MARKER);
 
-        expect(result.metadata.TITLE).toBe('Test Song');
-        expect(result.metadata.ARTIST).toBe('Test Artist');
-        expect(result.metadata.LANGUAGE).toBe('English');
-        expect(result.metadata.GAP).toBe('5000');
+        expect(result.header.TITLE).toBe('Test Song');
+        expect(result.header.ARTIST).toBe('Test Artist');
+        expect(result.header.LANGUAGE).toBe('English');
+        expect(result.header.GAP).toBe('5000');
         expect(result.noteLines).toHaveLength(3);
     });
 
@@ -24,7 +27,7 @@ E`;
 - 15
 : 20 5 3 World
 E`;
-        const result = FileManager.parseFile(content);
+        const result = FileManager.parseFile(content, UltraStarParser, END_MARKER);
 
         expect(result.noteLines).toEqual([': 10 5 3 Hello', '- 15', ': 20 5 3 World', 'E']);
     });
@@ -32,17 +35,17 @@ E`;
     test('handles missing metadata', () => {
         const content = `: 10 5 3 Hello
 E`;
-        const result = FileManager.parseFile(content);
+        const result = FileManager.parseFile(content, UltraStarParser, END_MARKER);
 
-        expect(Object.keys(result.metadata)).toHaveLength(0);
+        expect(Object.keys(result.header)).toHaveLength(0);
         expect(result.noteLines).toHaveLength(2);
     });
 
     test('handles Windows line endings', () => {
         const content = "#TITLE:Song\r\n: 10 5 3 Hello\r\nE";
-        const result = FileManager.parseFile(content);
+        const result = FileManager.parseFile(content, UltraStarParser, END_MARKER);
 
-        expect(result.metadata.TITLE).toBe('Song');
+        expect(result.header.TITLE).toBe('Song');
         expect(result.noteLines).toHaveLength(2);
     });
 
@@ -52,7 +55,7 @@ E`;
 : 10 5 3 Hello
 
 E`;
-        const result = FileManager.parseFile(content);
+        const result = FileManager.parseFile(content, UltraStarParser, END_MARKER);
 
         expect(result.noteLines).toHaveLength(2);
     });
@@ -60,10 +63,17 @@ E`;
 
 describe('FileManager - generateFile', () => {
     test('generates complete file', () => {
-        const metadata = {
+        const headerInfo = {
             TITLE: 'Test Song',
             ARTIST: 'Test Artist',
             LANGUAGE: 'English'
+        };
+        const metadata = {
+            title: 'Test Song',
+            language: 'English',
+            gapMinutes: 0,
+            gapSeconds: 0,
+            gapMilliseconds: 0
         };
         const syncedLines = [
             { line: ': 10 5 3 Hello' },
@@ -71,7 +81,7 @@ describe('FileManager - generateFile', () => {
             { line: 'E' }
         ];
 
-        const result = FileManager.generateFile(metadata, syncedLines);
+        const result = FileManager.generateFile(headerInfo, metadata, syncedLines);
 
         expect(result).toContain('#TITLE:Test Song');
         expect(result).toContain('#ARTIST:Test Artist');
@@ -81,37 +91,82 @@ describe('FileManager - generateFile', () => {
     });
 
     test('does not include GAP if value is 0', () => {
-        const metadata = {
+        const headerInfo = {
             TITLE: 'Song',
             GAP: '0'
         };
+        const metadata = {
+            title: 'Song',
+            language: '',
+            gapMinutes: 0,
+            gapSeconds: 0,
+            gapMilliseconds: 0
+        };
         const syncedLines = [{ line: 'E' }];
 
-        const result = FileManager.generateFile(metadata, syncedLines);
+        const result = FileManager.generateFile(headerInfo, metadata, syncedLines);
 
         expect(result).not.toContain('#GAP');
     });
 
     test('includes GAP if value is not 0', () => {
-        const metadata = {
+        const headerInfo = {
             TITLE: 'Song',
             GAP: '5000'
         };
+        const metadata = {
+            title: 'Song',
+            language: '',
+            gapMinutes: 0,
+            gapSeconds: 5,
+            gapMilliseconds: 0
+        };
         const syncedLines = [{ line: 'E' }];
 
-        const result = FileManager.generateFile(metadata, syncedLines);
+        const result = FileManager.generateFile(headerInfo, metadata, syncedLines);
 
         expect(result).toContain('#GAP:5000');
     });
 
-    test('includes empty line after metadata', () => {
-        const metadata = { TITLE: 'Song' };
-        const syncedLines = [{ line: ': 10 5 3 Hello' }];
+    test('adds GAP if not in original header but set to non-zero', () => {
+        const headerInfo = {
+            TITLE: 'Song'
+            // No GAP in original
+        };
+        const metadata = {
+            title: 'Song',
+            language: '',
+            gapMinutes: 0,
+            gapSeconds: 5,
+            gapMilliseconds: 0
+        };
+        const syncedLines = [{ line: 'E' }];
 
-        const result = FileManager.generateFile(metadata, syncedLines);
-        const lines = result.split('\n');
+        const result = FileManager.generateFile(headerInfo, metadata, syncedLines);
 
-        expect(lines[1]).toBe('');
+        expect(result).toContain('#GAP:5000');
+    });
+
+    test('respects edited metadata values', () => {
+        const headerInfo = {
+            TITLE: 'Original Title',
+            LANGUAGE: 'Original Language'
+        };
+        const metadata = {
+            title: 'Edited Title',
+            language: 'Edited Language',
+            gapMinutes: 0,
+            gapSeconds: 0,
+            gapMilliseconds: 0
+        };
+        const syncedLines = [{ line: 'E' }];
+
+        const result = FileManager.generateFile(headerInfo, metadata, syncedLines);
+
+        expect(result).toContain('#TITLE:Edited Title');
+        expect(result).toContain('#LANGUAGE:Edited Language');
+        expect(result).not.toContain('Original Title');
+        expect(result).not.toContain('Original Language');
     });
 });
 

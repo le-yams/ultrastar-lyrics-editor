@@ -5,6 +5,7 @@ import { TimeConverter } from './timeConverter';
 import { LyricsProcessor } from './lyricsProcessor';
 import { LyricsSynchronizer } from './lyricsSynchronizer';
 import { MetadataParser } from './metadataParser';
+import { FileManager } from './fileManager';
 
 // ============================================================================
 // SVG ICON COMPONENTS
@@ -450,23 +451,7 @@ export default function UltraStarLyricsEditor() {
     // ========================================================================
     const parseUltraStarFile = useCallback((content) => {
         try {
-            const lines = content.split('\n');
-            const header = {};
-            const noteLines = [];
-
-            lines.forEach(line => {
-                const cleanLine = line.replace(/[\r\n]+$/, '');
-                const trimmedLine = cleanLine.trim();
-
-                if (UltraStarParser.isHeaderLine(trimmedLine)) {
-                    const [key, ...valueParts] = trimmedLine.substring(1).split(':');
-                    header[key.trim()] = valueParts.join(':').trim();
-                } else if (trimmedLine.match(/^[:*FR-]/) || trimmedLine === ULTRASTAR.END_MARKER) {
-                    if (cleanLine.match(/^[:*FR-]/) || cleanLine === ULTRASTAR.END_MARKER) {
-                        noteLines.push(cleanLine);
-                    }
-                }
-            });
+            const { header, noteLines } = FileManager.parseFile(content, UltraStarParser, ULTRASTAR.END_MARKER);
 
             if (noteLines.length === 0) {
                 showNotification('No valid note lines found in file', 'error');
@@ -597,35 +582,7 @@ export default function UltraStarLyricsEditor() {
     // ========================================================================
     const generateOutput = useCallback(() => {
         try {
-            let output = '';
-
-            const totalGapMs = TimeConverter.componentsToMs(
-                metadata.gapMinutes,
-                metadata.gapSeconds,
-                metadata.gapMilliseconds
-            );
-
-            Object.keys(fileData.headerInfo).forEach(key => {
-                if (key === 'LANGUAGE') {
-                    output += `#${key}:${metadata.language}\n`;
-                } else if (key === 'TITLE') {
-                    output += `#${key}:${metadata.title}\n`;
-                } else if (key === 'GAP') {
-                    if (totalGapMs !== 0) {
-                        output += `#${key}:${totalGapMs}\n`;
-                    }
-                } else {
-                    output += `#${key}:${fileData.headerInfo[key]}\n`;
-                }
-            });
-
-            if (!fileData.headerInfo.GAP && totalGapMs !== 0) {
-                output += `#GAP:${totalGapMs}\n`;
-            }
-
-            fileData.syncedLines.forEach(item => {
-                output += item.line + '\n';
-            });
+            const output = FileManager.generateFile(fileData.headerInfo, metadata, fileData.syncedLines);
 
             setOutputText(output);
             setUI(prev => ({ ...prev, showOutput: true }));
