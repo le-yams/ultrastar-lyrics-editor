@@ -78,12 +78,14 @@ You are working on **UltraStar Lyrics Editor**, a React-based web application fo
 
 ## Project-Specific Knowledge
 
+**UltraStar File Format Specification:** https://usdx.eu/format/#specs
+
 ### UltraStar Metadata
 
-**Editable metadata (all must be user-configurable):**
+**Editable metadata:**
 - `TITLE` - Song title (default: original filename)
 - `ARTIST` - Artist name
-- `LANGUAGE` - Lyrics language (NO hardcoded values)
+- `LANGUAGE` - Lyrics language
 - `GAP` - Time offset in milliseconds (default: 0, omit from file if 0)
 
 **GAP Implementation:**
@@ -137,7 +139,7 @@ NoteType StartBeat Length Pitch Text
 ### Naming Conventions
 
 **ALWAYS use:**
-- Application name: "UltraStar Lyrics Editor" (NOT "UltraStar Sync Tool")
+- Application name: "UltraStar Lyrics Editor"
 - Files: kebab-case (e.g., `lyrics-processor.js`)
 - React Components: PascalCase (e.g., `LyricsEditor`)
 - Functions: camelCase (e.g., `parseLyrics`)
