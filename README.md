@@ -123,20 +123,6 @@ These warnings help you identify potential issues before generating the final fi
 
 The **GAP** metadata defines the delay (in milliseconds) before the song starts. This is useful when you need to synchronize the lyrics with the audio track.
 
-### Editing the GAP Value
-
-The editor provides three separate input fields for easier GAP management:
-- **Minutes**: The number of minutes
-- **Seconds**: The number of seconds (0-59)
-- **Milliseconds**: The number of milliseconds (0-999)
-
-The total GAP value in milliseconds is automatically calculated and displayed below the input fields.
-
-**Example:** For a GAP of 1 minute, 37 seconds, and 48 milliseconds:
-- Minutes: `1`
-- Seconds: `37`
-- Milliseconds: `48`
-- Total: `97048` ms
 
 ### Default Behavior
 
@@ -154,64 +140,6 @@ The editor provides visual feedback for all operations:
 - ℹ️ **Info notifications** (blue): General information messages
 
 All notifications automatically dismiss after 3 seconds, keeping your workspace clean.
-
-
-## Testing
-
-The project includes a comprehensive test suite with **89 unit tests** covering **97.36%** of the codebase.
-
-### Running Tests
-
-```bash
-# Run all tests
-npm test
-
-# Run tests in watch mode
-npm run test:watch
-
-# Run tests with coverage report
-npm run test:coverage
-```
-
-### Test Coverage
-
-| Module | Tests | Coverage |
-|--------|-------|----------|
-| UltraStarParser | 24 | 100% |
-| TimeConverter | 30 | 100% |
-| LyricsProcessor | 21 | 98.24% |
-| LyricsSynchronizer | 11 | 95.45% |
-| FileManager | 13 | 100% |
-| **TOTAL** | **89** | **97.36%** |
-
-For more information on testing, see [TESTING_GUIDE.md](TESTING_GUIDE.md).
-
-
-## Architecture
-
-The application is built with a modular architecture:
-
-```
-src/
-├── App.jsx                # Main React application
-├── main.jsx              # Entry point
-├── constants.js          # Configuration and constants
-├── ultraStarParser.js    # UltraStar format parsing
-├── timeConverter.js      # Time conversion utilities
-├── lyricsProcessor.js    # Lyrics processing and syllable extraction
-├── lyricsSynchronizer.js # Synchronization logic
-└── fileManager.js        # File parsing and generation
-```
-
-Each module is independently tested and can be reused in other projects.
-
-
-## Documentation
-
-- [TESTING_GUIDE.md](TESTING_GUIDE.md) - Guide for running and writing tests
-- [TEST_SPECIFICATIONS.md](TEST_SPECIFICATIONS.md) - Detailed test specifications
-- [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) - Project structure overview
-- [MIGRATION_COMPLETE.md](MIGRATION_COMPLETE.md) - Migration to Vite documentation
 
 
 
