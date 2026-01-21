@@ -24,9 +24,8 @@ This editor allows you to create a new UltraStar song file by synchronizing new 
 - **Preview mode**: Review all changes before saving
 
 ### 💾 Multiple Output Options
-- **Copy to clipboard**: Quick copy for immediate use
-- **Download file**: Save the synchronized file to your computer
-- **Text preview**: View the complete UltraStar file before exporting
+- **Generate and download**: Generate and automatically download the synchronized file in one click
+- **Generate and copy to clipboard**: Generate and copy the file content to clipboard for immediate use
 
 ### ♿ User-Friendly Interface
 - **Drag-and-drop support**: Easy file upload
@@ -75,10 +74,9 @@ npm run build
 4. Enter or paste the new lyrics in the text area (or load a lyrics file)
 5. Optionally edit the song title, language, and GAP (start delay) in the provided fields
 6. Click "Auto-sync" to automatically align the lyrics with existing timings
-6. Review the synchronized lyrics in the preview section
-7. Make manual adjustments if necessary by editing individual lines
-8. Click "Generate Final File" to create the new UltraStar file
-9. Copy to clipboard or download the file to your computer
+7. Review the synchronized lyrics in the preview section
+8. Make manual adjustments if necessary by editing individual lines
+9. Click either "Generate and download" to save the file, or "Generate and copy to clipboard" to copy the content
 
 
 ## Auto-synchronization

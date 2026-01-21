@@ -357,45 +357,6 @@ const WarningsDisplay = ({ warnings }) => {
 // ============================================================================
 // OUTPUT DISPLAY COMPONENT
 // ============================================================================
-const OutputDisplay = ({ outputText, onCopy, onDownload }) => {
-    if (!outputText) return null;
-
-    return (
-        <div className="mb-6">
-            <div className="flex items-center justify-between mb-2">
-                <h2 className="text-xl font-semibold text-purple-600">
-                    UltraStar File
-                </h2>
-                <div className="flex gap-2">
-                    <button
-                        type="button"
-                        onClick={onCopy}
-                        className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition"
-                    >
-                        📋 Copy
-                    </button>
-                    <button
-                        type="button"
-                        onClick={onDownload}
-                        className="bg-green-600 text-white px-4 py-2 rounded text-sm hover:bg-green-700 transition inline-flex items-center gap-1"
-                    >
-                        <Download className="w-4 h-4" />
-                        Download
-                    </button>
-                </div>
-            </div>
-            <textarea
-                value={outputText}
-                readOnly
-                className="w-full h-96 p-4 border-2 border-green-300 rounded-lg font-mono text-xs bg-gray-50"
-            />
-            <p className="text-sm text-gray-600 mt-2">
-                ✅ Copy or download this file to use with UltraStar
-            </p>
-        </div>
-    );
-};
-
 // ============================================================================
 // MAIN APP COMPONENT
 // ============================================================================
@@ -420,14 +381,12 @@ export default function UltraStarLyricsEditor() {
     const [lyrics, setLyrics] = useState('');
 
     const [ui, setUI] = useState({
-        showOutput: false,
         isLoading: false,
         isDragging: false
     });
 
     const [notification, setNotification] = useState(null);
     const [syncWarnings, setSyncWarnings] = useState([]);
-    const [outputText, setOutputText] = useState('');
 
     // ========================================================================
     // DERIVED STATE
@@ -580,35 +539,37 @@ export default function UltraStarLyricsEditor() {
     // ========================================================================
     // OUTPUT GENERATION
     // ========================================================================
-    const generateOutput = useCallback(() => {
+    const generateAndDownload = useCallback(() => {
         try {
             const output = FileManager.generateFile(fileData.headerInfo, metadata, fileData.syncedLines);
 
-            setOutputText(output);
-            setUI(prev => ({ ...prev, showOutput: true }));
-            showNotification('File generated successfully!', 'success');
+            const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'song_new.txt';
+            link.click();
+            window.URL.revokeObjectURL(url);
+
+            showNotification('File generated and downloaded successfully!', 'success');
         } catch (error) {
             logger.error('Error generating file:', error);
             showNotification('Error generating file: ' + error.message, 'error');
         }
     }, [fileData.headerInfo, fileData.syncedLines, metadata, showNotification]);
 
-    const copyToClipboard = useCallback(() => {
-        navigator.clipboard.writeText(outputText)
-            .then(() => showNotification('Copied to clipboard!', 'success'))
-            .catch(() => showNotification('Failed to copy to clipboard', 'error'));
-    }, [outputText, showNotification]);
+    const generateAndCopy = useCallback(() => {
+        try {
+            const output = FileManager.generateFile(fileData.headerInfo, metadata, fileData.syncedLines);
 
-    const downloadFile = useCallback(() => {
-        const blob = new Blob([outputText], { type: 'text/plain;charset=utf-8' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = 'song_new.txt';
-        link.click();
-        window.URL.revokeObjectURL(url);
-        showNotification('File downloaded!', 'success');
-    }, [outputText, showNotification]);
+            navigator.clipboard.writeText(output)
+                .then(() => showNotification('File generated and copied to clipboard!', 'success'))
+                .catch(() => showNotification('Failed to copy to clipboard', 'error'));
+        } catch (error) {
+            logger.error('Error generating file:', error);
+            showNotification('Error generating file: ' + error.message, 'error');
+        }
+    }, [fileData.headerInfo, fileData.syncedLines, metadata, showNotification]);
 
     // ========================================================================
     // PREVIEW EDIT HANDLER
@@ -718,23 +679,25 @@ export default function UltraStarLyricsEditor() {
 
                 {fileData.syncedLines.length > 0 && (
                     <div className="text-center mb-6">
-                        <button
-                            type="button"
-                            onClick={generateOutput}
-                            className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition inline-flex items-center gap-2"
-                        >
-                            <Download className="w-5 h-5" />
-                            Generate Final File
-                        </button>
+                        <div className="flex gap-4 justify-center">
+                            <button
+                                type="button"
+                                onClick={generateAndDownload}
+                                className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition inline-flex items-center gap-2"
+                            >
+                                <Download className="w-5 h-5" />
+                                Generate and download
+                            </button>
+                            <button
+                                type="button"
+                                onClick={generateAndCopy}
+                                className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition inline-flex items-center gap-2"
+                            >
+                                📋
+                                Generate and copy to clipboard
+                            </button>
+                        </div>
                     </div>
-                )}
-
-                {ui.showOutput && (
-                    <OutputDisplay
-                        outputText={outputText}
-                        onCopy={copyToClipboard}
-                        onDownload={downloadFile}
-                    />
                 )}
 
                 <div className="mt-8 bg-blue-50 rounded-lg p-4">
@@ -744,7 +707,7 @@ export default function UltraStarLyricsEditor() {
                         <li>Paste the new lyrics in the text area</li>
                         <li>Click "Auto-sync"</li>
                         <li>Review and adjust manually if necessary</li>
-                        <li>Generate and copy the synchronized file</li>
+                        <li>Generate and download or copy the synchronized file</li>
                     </ol>
                 </div>
             </div>
