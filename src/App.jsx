@@ -4,6 +4,7 @@ import { UltraStarParser } from './ultraStarParser';
 import { TimeConverter } from './timeConverter';
 import { LyricsProcessor } from './lyricsProcessor';
 import { LyricsSynchronizer } from './lyricsSynchronizer';
+import { MetadataParser } from './metadataParser';
 
 // ============================================================================
 // SVG ICON COMPONENTS
@@ -472,20 +473,13 @@ export default function UltraStarLyricsEditor() {
                 return;
             }
 
-            const gapValue = parseInt(header.GAP || '0', 10);
-            const gapComponents = TimeConverter.msToComponents(gapValue);
-
             setFileData({
                 originalLines: noteLines,
                 headerInfo: header,
                 syncedLines: []
             });
 
-            setMetadata({
-                title: header.TITLE || '',
-                language: header.LANGUAGE || '',
-                ...gapComponents
-            });
+            setMetadata(MetadataParser.parseMetadata(header));
 
             showNotification(`File loaded: ${noteLines.length} lines`, 'success');
         } catch (error) {
