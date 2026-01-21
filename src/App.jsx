@@ -300,7 +300,7 @@ const SyncPreview = ({ syncedLines, onLineUpdate, bpm, gapMs }) => {
                     if (item.type === 'break') {
                         return (
                             <div key={index} className="text-gray-400 text-sm py-1">
-                                {item.line}
+                                &nbsp;
                             </div>
                         );
                     }
@@ -688,7 +688,7 @@ export default function UltraStarLyricsEditor() {
                             ) : (
                                 <>
                                     <span>🎵</span>
-                                    <span>Auto-sync</span>
+                                    <span>Synchronize</span>
                                 </>
                             )}
                         </button>
@@ -735,7 +735,7 @@ export default function UltraStarLyricsEditor() {
                     <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
                         <li>Load your original UltraStar file</li>
                         <li>Paste the new lyrics in the text area</li>
-                        <li>Click "Auto-sync"</li>
+                        <li>Click "Synchronize"</li>
                         <li>Review and adjust manually if necessary</li>
                         <li>Generate and download or copy the synchronized file</li>
                     </ol>
