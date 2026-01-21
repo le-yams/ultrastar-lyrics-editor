@@ -18,7 +18,7 @@ You are working on **UltraStar Lyrics Editor**, a React-based web application fo
 - Separate concerns into distinct modules (parsing, synchronization, conversion)
 - Verify the code you're modifying is actually used by the application
 - Remove dead code from the repository
-- Create files without BOM (Byte Order Mark) - use UTF-8 encoding without BOM
+- **Create ALL files with UTF-8 encoding WITHOUT BOM (Byte Order Mark)** - unless explicitly instructed otherwise
 
 **NEVER:**
 - Duplicate code between application and modules
@@ -176,6 +176,7 @@ When code improvements are needed:
 - ALWAYS validate your work (tests, errors, manual testing)
 - Extract logic to modules, test modules, not HTML internals
 - Tests must test actual application code, not phantom implementations
+- **ALWAYS create files with UTF-8 encoding WITHOUT BOM** (unless explicitly told otherwise)
 
 ---
 
