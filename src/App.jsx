@@ -179,33 +179,36 @@ const LyricsEditor = ({ lyrics, onChange, onLoadFile, onLoadOriginal, hasOrigina
 // ============================================================================
 // METADATA EDITOR COMPONENT
 // ============================================================================
+const TextInput = ({ label, value, onChange, placeholder }) => (
+    <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+            {label}
+        </label>
+        <input
+            type="text"
+            value={value}
+            onChange={(e) => onChange(e.target.value)}
+            className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            placeholder={placeholder}
+        />
+    </div>
+);
+
 const MetadataEditor = ({ title, language, onTitleChange, onLanguageChange }) => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Song Title
-                </label>
-                <input
-                    type="text"
-                    value={title}
-                    onChange={(e) => onTitleChange(e.target.value)}
-                    className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Enter song title..."
-                />
-            </div>
-            <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Language
-                </label>
-                <input
-                    type="text"
-                    value={language}
-                    onChange={(e) => onLanguageChange(e.target.value)}
-                    className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                    placeholder="Enter language..."
-                />
-            </div>
+            <TextInput
+                label="Song Title"
+                value={title}
+                onChange={onTitleChange}
+                placeholder="Enter song title..."
+            />
+            <TextInput
+                label="Language"
+                value={language}
+                onChange={onLanguageChange}
+                placeholder="Enter language..."
+            />
         </div>
     );
 };
@@ -213,6 +216,27 @@ const MetadataEditor = ({ title, language, onTitleChange, onLanguageChange }) =>
 // ============================================================================
 // GAP EDITOR COMPONENT
 // ============================================================================
+const TimeInput = ({ label, value, onChange, min = 0, max }) => (
+    <div className="flex-1">
+        <label className="block text-xs text-gray-600 mb-1">{label}</label>
+        <input
+            type="number"
+            min={min}
+            max={max}
+            value={value}
+            onChange={(e) => {
+                const val = parseInt(e.target.value) || 0;
+                const bounded = max !== undefined
+                    ? Math.max(min, Math.min(max, val))
+                    : Math.max(min, val);
+                onChange(bounded);
+            }}
+            className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+            placeholder="0"
+        />
+    </div>
+);
+
 const GapEditor = ({ minutes, seconds, milliseconds, onMinutesChange, onSecondsChange, onMillisecondsChange }) => {
     const totalMs = useMemo(
         () => TimeConverter.componentsToMs(minutes, seconds, milliseconds),
@@ -225,41 +249,19 @@ const GapEditor = ({ minutes, seconds, milliseconds, onMinutesChange, onSecondsC
                 GAP (delay before the song starts)
             </label>
             <div className="flex gap-2 items-center">
-                <div className="flex-1">
-                    <label className="block text-xs text-gray-600 mb-1">Minutes</label>
-                    <input
-                        type="number"
-                        min="0"
-                        value={minutes}
-                        onChange={(e) => onMinutesChange(Math.max(0, parseInt(e.target.value) || 0))}
-                        className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        placeholder="0"
-                    />
-                </div>
-                <div className="flex-1">
-                    <label className="block text-xs text-gray-600 mb-1">Seconds</label>
-                    <input
-                        type="number"
-                        min="0"
-                        max={ULTRASTAR.TIME.MAX_SECONDS}
-                        value={seconds}
-                        onChange={(e) => onSecondsChange(Math.max(0, Math.min(ULTRASTAR.TIME.MAX_SECONDS, parseInt(e.target.value) || 0)))}
-                        className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        placeholder="0"
-                    />
-                </div>
-                <div className="flex-1">
-                    <label className="block text-xs text-gray-600 mb-1">Milliseconds</label>
-                    <input
-                        type="number"
-                        min="0"
-                        max={ULTRASTAR.TIME.MAX_MILLISECONDS}
-                        value={milliseconds}
-                        onChange={(e) => onMillisecondsChange(Math.max(0, Math.min(ULTRASTAR.TIME.MAX_MILLISECONDS, parseInt(e.target.value) || 0)))}
-                        className="w-full px-3 py-2 border border-purple-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
-                        placeholder="0"
-                    />
-                </div>
+                <TimeInput label="Minutes" value={minutes} onChange={onMinutesChange} />
+                <TimeInput
+                    label="Seconds"
+                    value={seconds}
+                    onChange={onSecondsChange}
+                    max={ULTRASTAR.TIME.MAX_SECONDS}
+                />
+                <TimeInput
+                    label="Milliseconds"
+                    value={milliseconds}
+                    onChange={onMillisecondsChange}
+                    max={ULTRASTAR.TIME.MAX_MILLISECONDS}
+                />
             </div>
             <p className="text-xs text-gray-500 mt-1">
                 Total: {totalMs} ms
@@ -479,26 +481,28 @@ export default function UltraStarLyricsEditor() {
         if (file) handleFileRead(file);
     }, [handleFileRead]);
 
-    const handleDragOver = useCallback((e) => {
+    const preventDefaultAndStopPropagation = useCallback((e) => {
         e.preventDefault();
         e.stopPropagation();
-        setUI(prev => ({ ...prev, isDragging: true }));
     }, []);
+
+    const handleDragOver = useCallback((e) => {
+        preventDefaultAndStopPropagation(e);
+        setUI(prev => ({ ...prev, isDragging: true }));
+    }, [preventDefaultAndStopPropagation]);
 
     const handleDragLeave = useCallback((e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        preventDefaultAndStopPropagation(e);
         setUI(prev => ({ ...prev, isDragging: false }));
-    }, []);
+    }, [preventDefaultAndStopPropagation]);
 
     const handleDrop = useCallback((e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        preventDefaultAndStopPropagation(e);
         setUI(prev => ({ ...prev, isDragging: false }));
 
         const files = e.dataTransfer.files;
         if (files.length > 0) handleFileRead(files[0]);
-    }, [handleFileRead]);
+    }, [preventDefaultAndStopPropagation, handleFileRead]);
 
     // ========================================================================
     // LYRICS HANDLERS
@@ -567,9 +571,19 @@ export default function UltraStarLyricsEditor() {
     // ========================================================================
     // OUTPUT GENERATION
     // ========================================================================
+    const generateOutput = useCallback(() => {
+        try {
+            return FileManager.generateFile(fileData.headerInfo, metadata, fileData.syncedLines);
+        } catch (error) {
+            logger.error('Error generating file:', error);
+            showNotification('Error generating file: ' + error.message, 'error');
+            throw error;
+        }
+    }, [fileData.headerInfo, fileData.syncedLines, metadata, showNotification]);
+
     const generateAndDownload = useCallback(() => {
         try {
-            const output = FileManager.generateFile(fileData.headerInfo, metadata, fileData.syncedLines);
+            const output = generateOutput();
 
             const blob = new Blob([output], { type: 'text/plain;charset=utf-8' });
             const url = window.URL.createObjectURL(blob);
@@ -581,23 +595,21 @@ export default function UltraStarLyricsEditor() {
 
             showNotification('File generated and downloaded successfully!', 'success');
         } catch (error) {
-            logger.error('Error generating file:', error);
-            showNotification('Error generating file: ' + error.message, 'error');
+            // Error already logged and notified in generateOutput
         }
-    }, [fileData.headerInfo, fileData.syncedLines, metadata, showNotification]);
+    }, [generateOutput, showNotification]);
 
     const generateAndCopy = useCallback(() => {
         try {
-            const output = FileManager.generateFile(fileData.headerInfo, metadata, fileData.syncedLines);
+            const output = generateOutput();
 
             navigator.clipboard.writeText(output)
                 .then(() => showNotification('File generated and copied to clipboard!', 'success'))
                 .catch(() => showNotification('Failed to copy to clipboard', 'error'));
         } catch (error) {
-            logger.error('Error generating file:', error);
-            showNotification('Error generating file: ' + error.message, 'error');
+            // Error already logged and notified in generateOutput
         }
-    }, [fileData.headerInfo, fileData.syncedLines, metadata, showNotification]);
+    }, [generateOutput, showNotification]);
 
     // ========================================================================
     // PREVIEW EDIT HANDLER
