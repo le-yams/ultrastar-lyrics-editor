@@ -1,9 +1,7 @@
-﻿import { TimeConverter } from './timeConverter.js';
-
+import { TimeConverter } from './timeConverter.js';
 // ============================================================================
 // FILE MANAGEMENT - Parser and Generator
 // ============================================================================
-
 /**
  * Parses an UltraStar file content
  * @param {string} content - The file content
@@ -15,24 +13,20 @@ export function parseFile(content, ultraStarParser, endMarker) {
     const lines = content.split('\n');
     const header = {};
     const noteLines = [];
-
     lines.forEach(line => {
         const cleanLine = line.replace(/[\r\n]+$/, '');
         const trimmedLine = cleanLine.trim();
-
         if (ultraStarParser.isHeaderLine(trimmedLine)) {
             const [key, ...valueParts] = trimmedLine.substring(1).split(':');
             header[key.trim()] = valueParts.join(':').trim();
-        } else if (trimmedLine.match(/^[:*FR-]/) || trimmedLine === endMarker) {
-            if (cleanLine.match(/^[:*FR-]/) || cleanLine === endMarker) {
+        } else if (ultraStarParser.isNoteLine(trimmedLine) || ultraStarParser.isBreakLine(trimmedLine) || trimmedLine === endMarker) {
+            if (ultraStarParser.isNoteLine(cleanLine) || ultraStarParser.isBreakLine(cleanLine) || cleanLine === endMarker) {
                 noteLines.push(cleanLine);
             }
         }
     });
-
     return { header, noteLines };
 }
-
 /**
  * Generates an UltraStar file content
  * @param {Object} headerInfo - Original header information
@@ -42,13 +36,11 @@ export function parseFile(content, ultraStarParser, endMarker) {
  */
 export function generateFile(headerInfo, metadata, syncedLines) {
     let output = '';
-
     const totalGapMs = TimeConverter.componentsToMs(
         metadata.gapMinutes,
         metadata.gapSeconds,
         metadata.gapMilliseconds
     );
-
     // Generate metadata lines
     Object.keys(headerInfo).forEach(key => {
         if (key === 'LANGUAGE') {
@@ -63,20 +55,16 @@ export function generateFile(headerInfo, metadata, syncedLines) {
             output += `#${key}:${headerInfo[key]}\n`;
         }
     });
-
     // Add GAP if it wasn't in original header but is set to non-zero
     if (!headerInfo.GAP && totalGapMs !== 0) {
         output += `#GAP:${totalGapMs}\n`;
     }
-
     // Add synced lines
     syncedLines.forEach(item => {
         output += item.line + '\n';
     });
-
     return output;
 }
-
 /**
  * Extracts a specific metadata value from file content
  * @param {string} content - The file content
@@ -88,7 +76,6 @@ export function extractMetadata(content, key, defaultValue = '') {
     const match = content.match(new RegExp(`#${key}:(.+)`, 'm'));
     return match ? match[1].trim() : defaultValue;
 }
-
 export const FileManager = {
     parseFile,
     generateFile,

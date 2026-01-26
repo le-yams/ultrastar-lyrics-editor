@@ -38,6 +38,10 @@ describe('UltraStarParser - parseNoteLine', () => {
         const result = UltraStarParser.parseNoteLine('* 10 5 3 Golden');
         expect(result.type).toBe('*');
     });
+    test('parses rap golden note type', () => {
+        const result = UltraStarParser.parseNoteLine('G 10 5 3 RapGolden');
+        expect(result.type).toBe('G');
+    });
     test('parses text ending with space', () => {
         const result = UltraStarParser.parseNoteLine(': 10 5 3 word ');
         expect(result.text).toBe('word ');
@@ -73,6 +77,7 @@ describe('UltraStarParser - validation methods', () => {
         expect(UltraStarParser.isNoteLine('* 10 5 3 Text')).toBe(true);
         expect(UltraStarParser.isNoteLine('F 10 5 3 Text')).toBe(true);
         expect(UltraStarParser.isNoteLine('R 10 5 3 Text')).toBe(true);
+        expect(UltraStarParser.isNoteLine('G 10 5 3 Text')).toBe(true);
         expect(UltraStarParser.isNoteLine('- 100')).toBe(false);
         expect(UltraStarParser.isNoteLine('#TITLE:Song')).toBe(false);
     });

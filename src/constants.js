@@ -3,7 +3,7 @@
 // ============================================================================
 export const ULTRASTAR = {
     NOTE_FIELD_COUNT: 4,
-    NOTE_REGEX: /^[:*FR]/,
+    NOTE_REGEX: /^[:*FRG]/,
     BREAK_REGEX: /^-/,
     END_MARKER: 'E',
     HEADER_PREFIX: '#',

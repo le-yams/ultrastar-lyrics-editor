@@ -80,6 +80,15 @@ You are working on **UltraStar Lyrics Editor**, a React-based web application fo
 
 **UltraStar File Format Specification:** https://usdx.eu/format/#specs
 
+### UltraStar Note Types
+
+**Supported note types:**
+- `:` - Normal note
+- `*` - Golden note (bonus points)
+- `F` - Freestyle note (not scored)
+- `R` - Rap note
+- `G` - Rap golden note (bonus rap note)
+
 ### UltraStar Metadata
 
 **Editable metadata:**
