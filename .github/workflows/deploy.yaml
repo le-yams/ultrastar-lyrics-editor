@@ -26,6 +26,9 @@ jobs:
       - name: Build project
         run: npm run build
 
+      - name: Copy .htaccess to dist
+        run: cp src/.htaccess dist/
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         with:
@@ -76,7 +79,6 @@ jobs:
           DEPLOY_HOST: ${{ secrets.SFTP_HOST }}
           DEPLOY_USERNAME: ${{ secrets.SFTP_USERNAME }}
           DEPLOY_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
-          DEPLOY_FOLDER: 'lyrics-editor'
         run: |
           lftp -c "
           set net:timeout 5;
@@ -84,6 +86,6 @@ jobs:
           set net:reconnect-interval-base 5;
           set sftp:auto-confirm yes;
           open -u $DEPLOY_USERNAME,$DEPLOY_PASSWORD sftp://$DEPLOY_HOST;
-          mirror -Renvp ./dist $DEPLOY_FOLDER;
+          mirror -Renvp ./dist/ .;
           bye
           "

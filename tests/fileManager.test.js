@@ -1,5 +1,5 @@
-import { FileManager } from '../src/fileManager.js';
-import { UltraStarParser } from '../src/ultraStarParser.js';
+import { FileManager } from '../src/lyrics-editor/fileManager.js';
+import { UltraStarParser } from '../src/lyrics-editor/ultraStarParser.js';
 const END_MARKER = 'E';
 describe('FileManager - parseFile', () => {
     test('parses complete valid file', () => {

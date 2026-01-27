@@ -1,4 +1,4 @@
-﻿import { MetadataParser } from '../src/metadataParser.js';
+﻿import { MetadataParser } from '../src/lyrics-editor/metadataParser.js';
 
 /**
  * GAP Loading Tests
