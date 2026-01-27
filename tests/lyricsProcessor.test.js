@@ -1,4 +1,4 @@
-import { LyricsProcessor } from '../src/lyricsProcessor.js';
+import { LyricsProcessor } from '../src/lyrics-editor/lyricsProcessor.js';
 describe('LyricsProcessor - extractSyllables', () => {
     test('extracts simple syllables without separator', () => {
         const result = LyricsProcessor.extractSyllables('Hello world');

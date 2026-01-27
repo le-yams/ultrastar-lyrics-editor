@@ -1,4 +1,4 @@
-import { LyricsSynchronizer } from '../src/lyricsSynchronizer.js';
+import { LyricsSynchronizer } from '../src/lyrics-editor/lyricsSynchronizer.js';
 describe('LyricsSynchronizer - validate', () => {
     test('generates warning when block count differs from phrase count', () => {
         const originalLines = [': 10 5 3 Hello', '- 15', ': 20 5 3 World'];

@@ -1,4 +1,4 @@
-import { TimeConverter } from '../src/timeConverter.js';
+import { TimeConverter } from '../src/lyrics-editor/timeConverter.js';
 describe('TimeConverter - msToComponents', () => {
     test('converts 0 ms', () => {
         expect(TimeConverter.msToComponents(0)).toEqual({ minutes: 0, seconds: 0, milliseconds: 0 });

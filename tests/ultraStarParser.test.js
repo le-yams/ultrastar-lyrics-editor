@@ -1,4 +1,4 @@
-import { UltraStarParser } from '../src/ultraStarParser.js';
+import { UltraStarParser } from '../src/lyrics-editor/ultraStarParser.js';
 describe('UltraStarParser - findSpacePositions', () => {
     test('finds 4 spaces in valid line', () => {
         const positions = UltraStarParser.findSpacePositions(': 10 5 3 Hello', 4);
