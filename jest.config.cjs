@@ -6,7 +6,7 @@
   moduleFileExtensions: ['js'],
   testMatch: ['**/tests/**/*.test.js'],
   collectCoverageFrom: [
-    'src/**/*.js',
+    'src/lyrics-editor/**/*.js',
     '!src/**/*.test.js',
   ],
   coverageThreshold: {

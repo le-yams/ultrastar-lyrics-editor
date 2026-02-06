@@ -26,13 +26,6 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Copy shared files to dist
-        run: |
-          cp src/index.html dist/
-          cp src/icon.svg dist/
-          cp src/theme.css dist/
-          cp src/tailwind-theme.js dist/
-
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         with:
