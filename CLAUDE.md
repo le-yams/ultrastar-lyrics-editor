@@ -22,23 +22,23 @@ npx jest tests/lyricsSynchronizer.test.js   # Run a single test file
 
 ## Architecture
 
-**Tech Stack:** React 19, Vite, Tailwind CSS (CDN), Jest
+**Tech Stack:** React 19, Vite, Tailwind CSS v4 (build-time via `@tailwindcss/vite`), Jest
 
-**Theme System:** Colors are centralized via CSS custom properties and Tailwind config mapping:
-- `src/public/theme.css` — Single source of truth for all theme colors (light `:root` and dark `.dark` selectors)
-- `src/public/tailwind-theme.js` — Maps CSS variables to semantic Tailwind class names (`theme-*`)
-- Both files must stay in sync: every CSS variable in `theme.css` must have a corresponding entry in `tailwind-theme.js`
-- Both pages load these files via `<link>` / `<script>` tags
-- Dark mode uses the `class` strategy (`darkMode: 'class'`); toggling adds/removes `.dark` on `<html>`
+**Theme System:** Colors are centralized in `src/app.css`, the single shared stylesheet:
+- CSS custom properties define light (`:root`) and dark (`.dark`) color values in a `@layer base` block
+- `@theme inline` maps these CSS variables to semantic Tailwind class names (`theme-*`)
+- `@custom-variant dark` enables class-based dark mode (`.dark` on `<html>`)
+- Both pages reference `app.css` via `<link rel="stylesheet">` — Vite compiles it at build time
 - Theme preference is persisted in `localStorage.theme` and shared across pages
 - Use `theme-*` classes (e.g., `bg-theme-card`, `text-theme-title`) instead of `dark:` variant pairs
 - Action buttons (`bg-purple-500`, `bg-green-600`), tooltip (`bg-gray-900`), NotificationToast, and `focus:ring-*` remain as direct Tailwind classes (not theme-dependent)
+- To add a new theme color: add the CSS variable in both `:root` and `.dark`, then add a `--color-theme-*` entry in `@theme inline`
 
-**Landing page:** `src/index.html` is a static HTML page (Tailwind CDN, no JS modules). Served as a Vite entry point.
+**Landing page:** `src/index.html` is a static HTML page (no JS modules). Served as a Vite entry point.
 
 **Vite root:** `src/` (multi-page setup). Build outputs to `dist/`. Both `src/index.html` and `src/lyrics-editor/index.html` are Vite entry points.
 
-**Public directory:** `src/public/` contains shared static assets (`theme.css`, `tailwind-theme.js`, `icon.svg`) copied verbatim to `dist/` without Vite processing. Referenced via absolute paths (`/theme.css`, etc.).
+**Public directory:** `src/public/` contains shared static assets (`icon.svg`) copied verbatim to `dist/` without Vite processing. Referenced via absolute paths (`/icon.svg`).
 
 **Module dependency flow:**
 ```

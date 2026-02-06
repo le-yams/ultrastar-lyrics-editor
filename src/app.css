@@ -1,0 +1,161 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Dark mode: class-based strategy (toggle .dark on <html>)
+   ========================================================================== */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ==========================================================================
+   Theme variables — light (:root) and dark (.dark)
+   Edit colors here to update both pages at once.
+   ========================================================================== */
+@layer base {
+  :root {
+    /* Page gradient */
+    --color-page-from: #faf5ff;       /* purple-50 */
+    --color-page-to: #fdf2f8;         /* pink-50 */
+
+    /* Card / surfaces */
+    --color-card: #ffffff;
+    --color-card-hover: #f9fafb;      /* gray-50 */
+    --color-surface: #f9fafb;         /* gray-50 */
+
+    /* Text */
+    --color-title: #9333ea;           /* purple-600 */
+    --color-text-primary: #374151;    /* gray-700 */
+    --color-text-secondary: #4b5563;  /* gray-600 */
+    --color-text-muted: #6b7280;      /* gray-500 */
+
+    /* Accent */
+    --color-accent: #a855f7;          /* purple-500 */
+    --color-accent-hover: #7e22ce;    /* purple-700 */
+
+    /* Borders */
+    --color-border-accent: #d8b4fe;   /* purple-300 */
+    --color-border: #d1d5db;          /* gray-300 */
+
+    /* Inputs */
+    --color-input-bg: #ffffff;
+    --color-input-text: #111827;      /* gray-900 */
+
+    /* Toggle button */
+    --color-toggle-bg: #e5e7eb;       /* gray-200 */
+    --color-toggle-hover: #d1d5db;    /* gray-300 */
+
+    /* Info box */
+    --color-info-bg: #eff6ff;         /* blue-50 */
+    --color-info-title: #1e3a5f;      /* blue-900 */
+    --color-info-text: #1e40af;       /* blue-800 */
+
+    /* Warning box */
+    --color-warn-bg: #fefce8;         /* yellow-50 */
+    --color-warn-icon: #ca8a04;       /* yellow-600 */
+    --color-warn-title: #854d0e;      /* yellow-800 */
+    --color-warn-text: #a16207;       /* yellow-700 */
+
+    /* Highlight / secondary accent */
+    --color-highlight: #2563eb;       /* blue-600 */
+    --color-highlight-light: #3b82f6; /* blue-500 */
+
+    /* Disabled */
+    --color-disabled-bg: #d1d5db;     /* gray-300 */
+    --color-disabled-text: #6b7280;   /* gray-500 */
+
+    /* Shadow */
+    --color-shadow: rgba(0, 0, 0, 0.1);
+
+    /* Footer */
+    --color-footer: #9ca3af;          /* gray-400 */
+    --color-footer-hover: #4b5563;    /* gray-600 */
+
+    /* Drag active */
+    --color-drag-bg: #f3e8ff;         /* purple-100 */
+  }
+
+  .dark {
+    --color-page-from: #111827;       /* gray-900 */
+    --color-page-to: #1f2937;         /* gray-800 */
+
+    --color-card: #1f2937;            /* gray-800 */
+    --color-card-hover: #374151;      /* gray-700 */
+    --color-surface: #374151;         /* gray-700 */
+
+    --color-title: #c084fc;           /* purple-400 */
+    --color-text-primary: #e5e7eb;    /* gray-200 */
+    --color-text-secondary: #9ca3af;  /* gray-400 */
+    --color-text-muted: #6b7280;      /* gray-500 */
+
+    --color-accent: #c084fc;          /* purple-400 */
+    --color-accent-hover: #d8b4fe;    /* purple-300 */
+
+    --color-border-accent: #6b21a8;   /* purple-700 */
+    --color-border: #4b5563;          /* gray-600 */
+
+    --color-input-bg: #374151;        /* gray-700 */
+    --color-input-text: #e5e7eb;      /* gray-200 */
+
+    --color-toggle-bg: #374151;       /* gray-700 */
+    --color-toggle-hover: #4b5563;    /* gray-600 */
+
+    --color-info-bg: rgba(30, 58, 138, 0.3);  /* blue-900/30 */
+    --color-info-title: #bfdbfe;      /* blue-200 */
+    --color-info-text: #93c5fd;       /* blue-300 */
+
+    --color-warn-bg: rgba(120, 53, 15, 0.3);  /* yellow-900/30 */
+    --color-warn-icon: #facc15;       /* yellow-400 */
+    --color-warn-title: #fef08a;      /* yellow-200 */
+    --color-warn-text: #fde047;       /* yellow-300 */
+
+    --color-highlight: #60a5fa;       /* blue-400 */
+    --color-highlight-light: #3b82f6; /* blue-500 */
+
+    --color-disabled-bg: #4b5563;     /* gray-600 */
+    --color-disabled-text: #9ca3af;   /* gray-400 */
+
+    --color-shadow: rgba(0, 0, 0, 0.5);
+
+    --color-footer: #4b5563;          /* gray-600 */
+    --color-footer-hover: #9ca3af;    /* gray-400 */
+
+    --color-drag-bg: rgba(88, 28, 135, 0.3);  /* purple-900/30 */
+  }
+}
+
+/* ==========================================================================
+   Tailwind theme mapping — CSS variables → utility classes (theme-*)
+   @theme inline keeps var() references so .dark overrides work at runtime.
+   ========================================================================== */
+@theme inline {
+  --color-theme-page-from: var(--color-page-from);
+  --color-theme-page-to: var(--color-page-to);
+  --color-theme-card: var(--color-card);
+  --color-theme-card-hover: var(--color-card-hover);
+  --color-theme-surface: var(--color-surface);
+  --color-theme-title: var(--color-title);
+  --color-theme-text: var(--color-text-primary);
+  --color-theme-text-secondary: var(--color-text-secondary);
+  --color-theme-text-muted: var(--color-text-muted);
+  --color-theme-accent: var(--color-accent);
+  --color-theme-accent-hover: var(--color-accent-hover);
+  --color-theme-border-accent: var(--color-border-accent);
+  --color-theme-border: var(--color-border);
+  --color-theme-input-bg: var(--color-input-bg);
+  --color-theme-input-text: var(--color-input-text);
+  --color-theme-toggle-bg: var(--color-toggle-bg);
+  --color-theme-toggle-hover: var(--color-toggle-hover);
+  --color-theme-info-bg: var(--color-info-bg);
+  --color-theme-info-title: var(--color-info-title);
+  --color-theme-info-text: var(--color-info-text);
+  --color-theme-warn-bg: var(--color-warn-bg);
+  --color-theme-warn-icon: var(--color-warn-icon);
+  --color-theme-warn-title: var(--color-warn-title);
+  --color-theme-warn-text: var(--color-warn-text);
+  --color-theme-highlight: var(--color-highlight);
+  --color-theme-highlight-light: var(--color-highlight-light);
+  --color-theme-disabled-bg: var(--color-disabled-bg);
+  --color-theme-disabled-text: var(--color-disabled-text);
+  --color-theme-footer: var(--color-footer);
+  --color-theme-footer-hover: var(--color-footer-hover);
+  --color-theme-drag-bg: var(--color-drag-bg);
+  --shadow-theme: 0 10px 15px -3px var(--color-shadow);
+}
