@@ -44,7 +44,7 @@ const ThemeToggle = () => {
     return (
         <button
             onClick={toggle}
-            className="p-2 rounded-lg bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors text-xl"
+            className="p-2 rounded-lg bg-theme-toggle-bg hover:bg-theme-toggle-hover transition-colors text-xl"
             aria-label="Toggle theme"
             type="button"
         >
@@ -90,16 +90,16 @@ const FileUploadZone = ({ onFileLoad, fileInfo, isDragging, onDragOver, onDragLe
     return (
         <label
             className={`border-2 border-dashed rounded-lg transition-colors cursor-pointer flex flex-col items-center justify-center p-4 min-h-[150px] ${
-                isDragging ? 'border-purple-500 bg-purple-100 dark:bg-purple-900/30' : 'border-purple-300 dark:border-purple-700 bg-white dark:bg-gray-800'
+                isDragging ? 'border-purple-500 bg-theme-drag-bg' : 'border-theme-border-accent bg-theme-card'
             }`}
             onDragOver={onDragOver}
             onDragLeave={onDragLeave}
             onDrop={onDrop}
         >
-            <div className="text-purple-500 dark:text-purple-400 mb-2">
+            <div className="text-theme-accent mb-2">
                 <Upload />
             </div>
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+            <span className="text-sm font-medium text-theme-text mb-2">
                 Load Original UltraStar File
             </span>
             <span className="text-xs text-gray-500 mb-2">
@@ -114,12 +114,12 @@ const FileUploadZone = ({ onFileLoad, fileInfo, isDragging, onDragOver, onDragLe
             {fileInfo.lineCount > 0 ? (
                 <div className="text-center">
                     {fileInfo.title && (
-                        <div className="text-sm font-semibold text-purple-700 dark:text-purple-400">
+                        <div className="text-sm font-semibold text-theme-accent">
                             {fileInfo.title}
                         </div>
                     )}
                     {fileInfo.artist && (
-                        <div className="text-sm text-purple-600 dark:text-purple-400">
+                        <div className="text-sm text-theme-accent">
                             {fileInfo.artist}
                         </div>
                     )}
@@ -139,16 +139,16 @@ const FileUploadZone = ({ onFileLoad, fileInfo, isDragging, onDragOver, onDragLe
 // ============================================================================
 const LyricsEditor = ({ lyrics, onChange, onLoadFile, onLoadOriginal, hasOriginalFile }) => {
     return (
-        <div className="border-2 border-purple-300 dark:border-purple-700 rounded-lg p-4">
+        <div className="border-2 border-theme-border-accent rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
-                    <label className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                    <label className="text-sm font-medium text-theme-text">
                         New lyrics
                     </label>
                     <div className="relative group">
                         <button
                             type="button"
-                            className="text-purple-500 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition focus:outline-none focus:ring-2 focus:ring-purple-500 rounded"
+                            className="text-theme-accent hover:text-theme-accent-hover transition focus:outline-none focus:ring-2 focus:ring-purple-500 rounded"
                             aria-label="Help"
                         >
                             <HelpIcon className="w-4 h-4" />
@@ -173,7 +173,7 @@ const LyricsEditor = ({ lyrics, onChange, onLoadFile, onLoadOriginal, hasOrigina
                         disabled={!hasOriginalFile}
                         className={`px-3 py-1 rounded text-xs transition ${
                             !hasOriginalFile
-                                ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                                ? 'bg-theme-disabled-bg text-theme-disabled-text cursor-not-allowed'
                                 : 'bg-blue-500 text-white hover:bg-blue-600'
                         }`}
                         title="Load original lyrics with syllable separators"
@@ -192,7 +192,7 @@ const LyricsEditor = ({ lyrics, onChange, onLoadFile, onLoadOriginal, hasOrigina
                 </div>
             </div>
             <textarea
-                className="w-full h-32 p-2 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+                className="w-full h-32 p-2 border border-theme-border rounded text-sm bg-theme-input-bg text-theme-input-text"
                 placeholder="Paste your new lyrics here or load a file..."
                 value={lyrics}
                 onChange={onChange}
@@ -206,14 +206,14 @@ const LyricsEditor = ({ lyrics, onChange, onLoadFile, onLoadOriginal, hasOrigina
 // ============================================================================
 const TextInput = ({ label, value, onChange, placeholder }) => (
     <div>
-        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+        <label className="block text-sm font-medium text-theme-text mb-2">
             {label}
         </label>
         <input
             type="text"
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            className="w-full px-3 py-2 border border-purple-300 dark:border-purple-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+            className="w-full px-3 py-2 border border-theme-border-accent rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-theme-input-bg text-theme-input-text"
             placeholder={placeholder}
         />
     </div>
@@ -243,7 +243,7 @@ const MetadataEditor = ({ title, language, onTitleChange, onLanguageChange }) =>
 // ============================================================================
 const TimeInput = ({ label, value, onChange, min = 0, max }) => (
     <div className="flex-1">
-        <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">{label}</label>
+        <label className="block text-xs text-theme-text-secondary mb-1">{label}</label>
         <input
             type="number"
             min={min}
@@ -256,7 +256,7 @@ const TimeInput = ({ label, value, onChange, min = 0, max }) => (
                     : Math.max(min, val);
                 onChange(bounded);
             }}
-            className="w-full px-3 py-2 border border-purple-300 dark:border-purple-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200"
+            className="w-full px-3 py-2 border border-theme-border-accent rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 bg-theme-input-bg text-theme-input-text"
             placeholder="0"
         />
     </div>
@@ -270,7 +270,7 @@ const GapEditor = ({ minutes, seconds, milliseconds, onMinutesChange, onSecondsC
 
     return (
         <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+            <label className="block text-sm font-medium text-theme-text mb-2">
                 GAP (delay before the song starts)
             </label>
             <div className="flex gap-2 items-center">
@@ -319,10 +319,10 @@ const SyncPreview = ({ syncedLines, onLineUpdate, bpm, gapMs }) => {
 
     return (
         <div className="mb-6">
-            <h2 className="text-xl font-semibold text-purple-600 dark:text-purple-400 mb-3">
+            <h2 className="text-xl font-semibold text-theme-title mb-3">
                 Preview and Edit
             </h2>
-            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 max-h-96 overflow-y-auto">
+            <div className="bg-theme-surface rounded-lg p-4 max-h-96 overflow-y-auto">
                 {syncedLines.map((item, index) => {
                     if (item.type === 'break') {
                         return (
@@ -334,7 +334,7 @@ const SyncPreview = ({ syncedLines, onLineUpdate, bpm, gapMs }) => {
 
                     if (item.type === 'end') {
                         return (
-                            <div key={index} className="text-gray-600 dark:text-gray-400 font-bold text-sm py-1">
+                            <div key={index} className="text-theme-text-secondary font-bold text-sm py-1">
                                 {item.line}
                             </div>
                         );
@@ -352,7 +352,7 @@ const SyncPreview = ({ syncedLines, onLineUpdate, bpm, gapMs }) => {
                         return (
                             <div key={index} className="flex items-center gap-2 py-1">
                                 {timing ? (
-                                    <span className="text-xs font-mono text-purple-600 dark:text-purple-400 w-12 flex-shrink-0 font-semibold">
+                                    <span className="text-xs font-mono text-theme-accent w-12 flex-shrink-0 font-semibold">
                                         {TimeConverter.formatTime(timing.minutes, timing.seconds)}
                                     </span>
                                 ) : (
@@ -361,14 +361,14 @@ const SyncPreview = ({ syncedLines, onLineUpdate, bpm, gapMs }) => {
                                 <span className="text-xs text-gray-500 w-16 flex-shrink-0">
                                     {parsed.type} {parsed.start}
                                 </span>
-                                <span className="text-xs text-blue-600 dark:text-blue-400 w-32 flex-shrink-0 italic truncate" title={item.original}>
+                                <span className="text-xs text-theme-highlight w-32 flex-shrink-0 italic truncate" title={item.original}>
                                     {item.original}
                                 </span>
                                 <input
                                     type="text"
                                     value={parsed.text}
                                     onChange={(e) => onLineUpdate(index, e.target.value)}
-                                    className="flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200"
+                                    className="flex-1 px-2 py-1 border border-theme-border rounded text-sm bg-theme-input-bg text-theme-input-text"
                                     placeholder="Enter text..."
                                 />
                             </div>
@@ -376,7 +376,7 @@ const SyncPreview = ({ syncedLines, onLineUpdate, bpm, gapMs }) => {
                     }
 
                     return (
-                        <div key={index} className="text-gray-600 dark:text-gray-400 text-sm py-1">
+                        <div key={index} className="text-theme-text-secondary text-sm py-1">
                             {item.line}
                         </div>
                     );
@@ -393,12 +393,12 @@ const WarningsDisplay = ({ warnings }) => {
     if (warnings.length === 0) return null;
 
     return (
-        <div className="mb-6 bg-yellow-50 dark:bg-yellow-900/30 border-l-4 border-yellow-400 p-4 rounded">
+        <div className="mb-6 bg-theme-warn-bg border-l-4 border-yellow-400 p-4 rounded">
             <div className="flex items-start">
-                <span className="text-yellow-600 dark:text-yellow-400 text-xl mr-3">⚠</span>
+                <span className="text-theme-warn-icon text-xl mr-3">⚠</span>
                 <div className="flex-1">
-                    <h3 className="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-2">Synchronization Warnings</h3>
-                    <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
+                    <h3 className="text-sm font-semibold text-theme-warn-title mb-2">Synchronization Warnings</h3>
+                    <ul className="text-sm text-theme-warn-text space-y-1">
                         {warnings.map((warning, index) => (
                             <li key={index}>• {warning}</li>
                         ))}
@@ -656,21 +656,21 @@ export default function UltraStarLyricsEditor() {
     // RENDER
     // ========================================================================
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 dark:from-gray-900 dark:to-gray-800">
+        <div className="min-h-screen bg-gradient-to-br from-theme-page-from to-theme-page-to">
             <NotificationToast notification={notification} />
           <div className="w-full max-w-6xl mx-auto p-6">
 
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg dark:shadow-gray-900/50 p-6">
+            <div className="bg-theme-card rounded-lg shadow-theme p-6">
                 <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-3xl font-bold text-purple-600 dark:text-purple-400">
+                    <h1 className="text-3xl font-bold text-theme-title">
                         UltraStar Lyrics Editor
                     </h1>
                     <ThemeToggle />
                 </div>
 
-                <div className="mb-6 bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4">
-                    <h3 className="font-semibold text-blue-900 dark:text-blue-200 mb-2">📋 Instructions</h3>
-                    <ol className="text-sm text-blue-800 dark:text-blue-300 space-y-1 list-decimal list-inside">
+                <div className="mb-6 bg-theme-info-bg rounded-lg p-4">
+                    <h3 className="font-semibold text-theme-info-title mb-2">📋 Instructions</h3>
+                    <ol className="text-sm text-theme-info-text space-y-1 list-decimal list-inside">
                         <li>Load your original UltraStar file</li>
                         <li>Paste the new lyrics in the text area</li>
                         <li>Click "Synchronize"</li>
@@ -724,7 +724,7 @@ export default function UltraStarLyricsEditor() {
                             disabled={ui.isLoading}
                             className={`px-6 py-3 rounded-lg font-semibold transition inline-flex items-center gap-2 ${
                                 ui.isLoading
-                                    ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
+                                    ? 'bg-theme-disabled-bg cursor-not-allowed'
                                     : 'bg-purple-600 hover:bg-purple-700 text-white'
                             }`}
                             type="button"
@@ -744,7 +744,7 @@ export default function UltraStarLyricsEditor() {
                                 </>
                             )}
                         </button>
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                        <p className="text-xs text-theme-text-secondary mt-2">
                             Lyrics will be aligned to original timings
                         </p>
                     </div>
