@@ -26,8 +26,10 @@ jobs:
       - name: Build project
         run: npm run build
 
-      - name: Copy .htaccess to dist
-        run: cp src/.htaccess dist/
+      - name: Copy shared files to dist
+        run: |
+          cp src/index.html dist/
+          cp src/icon.svg dist/
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
@@ -35,7 +37,6 @@ jobs:
           name: dist
           path: dist/
           retention-days: 1
-          include-hidden-files: true
 
   test:
     name: Test

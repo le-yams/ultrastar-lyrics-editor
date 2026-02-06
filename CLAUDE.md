@@ -4,7 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-UltraStar Lyrics Editor is a React web application for synchronizing lyrics with UltraStar karaoke song files. Users load existing UltraStar files, input new lyrics, and the app automatically aligns them to existing note timings.
+UltraStar Tools is a collection of web tools for UltraStar karaoke files. A static landing page (`src/index.html`) lists available tools. Each tool lives in its own subdirectory under `src/`.
+
+**Current tools:**
+- **Lyrics Editor** (`src/lyrics-editor/`) — React app for synchronizing new lyrics with existing UltraStar note timings.
 
 ## Commands
 
@@ -20,6 +23,8 @@ npx jest tests/lyricsSynchronizer.test.js   # Run a single test file
 ## Architecture
 
 **Tech Stack:** React 19, Vite, Tailwind CSS (CDN), Jest
+
+**Landing page:** `src/index.html` is a static HTML page (Tailwind CDN, no build step). Copied to `dist/` by CI.
 
 **Vite root:** `src/lyrics-editor/` (not project root). Build outputs to `dist/lyrics-editor/`.
 
