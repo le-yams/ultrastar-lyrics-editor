@@ -16,28 +16,34 @@
         }
     </script>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-theme-page-from to-theme-page-to flex flex-col items-center justify-center p-6">
-    <div class="absolute top-4 right-4">
-        <button onclick="toggleTheme()" class="p-2 rounded-lg bg-theme-toggle-bg hover:bg-theme-toggle-hover transition-colors text-xl" aria-label="Toggle theme">
-            <span class="dark:hidden">🌙</span>
-            <span class="hidden dark:inline">☀️</span>
-        </button>
+<body>
+    <div class="min-h-screen bg-gradient-to-br from-theme-page-from to-theme-page-to">
+        <div class="w-full max-w-6xl mx-auto p-6">
+            <div class="bg-theme-card rounded-lg shadow-theme p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h1 class="text-3xl font-bold text-theme-title">UltraStar Tools</h1>
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg bg-theme-toggle-bg hover:bg-theme-toggle-hover transition-colors text-xl" aria-label="Toggle theme">
+                        <span class="dark:hidden">🌙</span>
+                        <span class="hidden dark:inline">☀️</span>
+                    </button>
+                </div>
+
+                <p class="text-theme-text-secondary mb-6">A collection of tools for UltraStar karaoke files</p>
+
+                <div class="grid gap-4">
+                    <a href="./lyrics-editor/"
+                       class="block bg-theme-surface hover:bg-theme-card-hover border border-theme-border-accent rounded-lg p-6 transition-colors">
+                        <h2 class="text-xl font-semibold text-theme-title mb-1">Lyrics Editor</h2>
+                        <p class="text-theme-text-muted text-sm">Synchronize new lyrics with existing UltraStar note timings</p>
+                    </a>
+                </div>
+
+                <footer class="mt-8 pt-4 border-t border-theme-border text-center">
+                    <a href="https://github.com/yanndisanto/ultrastar-lyrics-editor" class="text-theme-footer text-xs hover:text-theme-footer-hover transition-colors">GitHub</a>
+                </footer>
+            </div>
+        </div>
     </div>
-
-    <h1 class="text-4xl font-bold mb-2 text-theme-title">UltraStar Tools</h1>
-    <p class="text-theme-text-secondary mb-10">A collection of tools for UltraStar karaoke files</p>
-
-    <div class="grid gap-6 w-full max-w-md">
-        <a href="./lyrics-editor/"
-           class="block bg-theme-card hover:bg-theme-card-hover border border-theme-border-accent rounded-lg p-6 transition-colors">
-            <h2 class="text-xl font-semibold text-theme-text mb-1">Lyrics Editor</h2>
-            <p class="text-theme-text-muted text-sm">Synchronize new lyrics with existing UltraStar note timings</p>
-        </a>
-    </div>
-
-    <footer class="mt-16 text-theme-footer text-xs">
-        <a href="https://github.com/yanndisanto/ultrastar-lyrics-editor" class="hover:text-theme-footer-hover transition-colors">GitHub</a>
-    </footer>
 
     <script>
         function toggleTheme() {

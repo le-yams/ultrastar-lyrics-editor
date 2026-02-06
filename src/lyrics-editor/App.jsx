@@ -662,9 +662,16 @@ export default function UltraStarLyricsEditor() {
 
             <div className="bg-theme-card rounded-lg shadow-theme p-6">
                 <div className="flex items-center justify-between mb-6">
-                    <h1 className="text-3xl font-bold text-theme-title">
-                        UltraStar Lyrics Editor
-                    </h1>
+                    <div className="flex items-center gap-3">
+                        <a href="/" className="text-theme-accent hover:text-theme-accent-hover transition" aria-label="Back to home" title="Back to UltraStar Tools">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                        </a>
+                        <h1 className="text-3xl font-bold text-theme-title">
+                            Lyrics Editor
+                        </h1>
+                    </div>
                     <ThemeToggle />
                 </div>
 
