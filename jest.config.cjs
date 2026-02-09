@@ -7,6 +7,7 @@
   testMatch: ['**/tests/**/*.test.js'],
   collectCoverageFrom: [
     'src/lyrics-editor/**/*.js',
+    'src/timings-editor/**/*.js',
     '!src/**/*.test.js',
   ],
   coverageThreshold: {

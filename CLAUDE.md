@@ -8,6 +8,7 @@ UltraStar Tools is a collection of web tools for UltraStar karaoke files. A stat
 
 **Current tools:**
 - **Lyrics Editor** (`src/lyrics-editor/`) — React app for synchronizing new lyrics with existing UltraStar note timings.
+- **Timings Editor** (`src/timings-editor/`) — React app for shifting note timings by applying cumulative beat offsets.
 
 ## Commands
 
@@ -36,11 +37,11 @@ npx jest tests/lyricsSynchronizer.test.js   # Run a single test file
 
 **Landing page:** `src/index.html` is a static HTML page (no JS modules). Served as a Vite entry point.
 
-**Vite root:** `src/` (multi-page setup). Build outputs to `dist/`. Both `src/index.html` and `src/lyrics-editor/index.html` are Vite entry points.
+**Vite root:** `src/` (multi-page setup). Build outputs to `dist/`. Entry points: `src/index.html`, `src/lyrics-editor/index.html`, `src/timings-editor/index.html`.
 
 **Public directory:** `src/public/` contains shared static assets (`icon.svg`) copied verbatim to `dist/` without Vite processing. Referenced via absolute paths (`/icon.svg`).
 
-**Module dependency flow:**
+**Module dependency flow (Lyrics Editor):**
 ```
 App.jsx (UI) → LyricsSynchronizer → LyricsProcessor → UltraStarParser → constants
                                    → UltraStarParser
@@ -50,9 +51,19 @@ App.jsx (UI) → LyricsSynchronizer → LyricsProcessor → UltraStarParser → 
              → UltraStarParser
 ```
 
-**App.jsx** is a single-file UI containing all React components (FileUploadZone, LyricsEditor, MetadataEditor, GapEditor, SyncPreview, WarningsDisplay). State is organized into grouped `useState` objects: `fileData` (originalLines, headerInfo, syncedLines), `metadata` (title, language, gap components), `lyrics` (string), and `ui` (isLoading, isDragging).
+**Module dependency flow (Timings Editor):**
+```
+App.jsx (UI) → TimingsEditor → UltraStarParser → constants
+             → FileManager → TimeConverter → constants
+             → TimeConverter
+             → UltraStarParser
+```
 
-**Testing:** Jest config is CJS (`jest.config.cjs`) with babel-jest transform. Tests live in `tests/*.test.js` and import from `src/lyrics-editor/`.
+**App.jsx** (per tool) is a single-file UI containing all React components. Each tool has its own `App.jsx`, `main.jsx`, and `index.html`.
+
+**Shared modules:** `UltraStarParser`, `FileManager`, `TimeConverter`, and `constants` live in `src/lyrics-editor/` and are imported by other tools via relative paths (`../lyrics-editor/...`).
+
+**Testing:** Jest config is CJS (`jest.config.cjs`) with babel-jest transform. Tests live in `tests/*.test.js` and import from `src/lyrics-editor/` or `src/timings-editor/`.
 
 ## UltraStar Format
 
@@ -78,6 +89,15 @@ App.jsx (UI) → LyricsSynchronizer → LyricsProcessor → UltraStarParser → 
 
 Example: `hel|lo world` → Notes: `hel` (no space), `lo ` (with space), `world` (no space)
 
+## Timings Editor Algorithm
+
+`TimingsEditor.applyBeatOffsets(noteLines, offsets)` shifts note timings:
+- `offsets` is `{ lineIndex: beatOffset }` — maps a line index to a beat shift value
+- Offsets accumulate: each offset adds to all subsequent notes/breaks
+- Note lines: `start` beat is adjusted by cumulative offset
+- Break lines: position is adjusted by cumulative offset
+- End marker: unchanged
+
 ## Code Conventions
 
 - **Files:** kebab-case (`lyrics-processor.js`)
@@ -87,7 +107,7 @@ Example: `hel|lo world` → Notes: `hel` (no space), `lo ` (with space), `world`
 
 ## Testing Requirements
 
-- Tests must test modules in `src/lyrics-editor/`, not internal HTML code
+- Tests must test modules in `src/lyrics-editor/` or `src/timings-editor/`, not internal HTML code
 - Write failing test first when fixing bugs (TDD)
 - Coverage threshold: 90% for all metrics
 - Do not create README.md in tests directory
