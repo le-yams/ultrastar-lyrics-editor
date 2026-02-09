@@ -28,16 +28,18 @@ export const TimeConverter = {
 
         // Formula: time (in seconds) = (beat * 60 / BPM / 4) + GAP
         // Division by 4 because UltraStar uses quarter notes
-        const timeInSeconds = (beat * 60 / bpm / 4) + (gapMs / 1000);
-        const minutes = Math.floor(timeInSeconds / 60);
-        const seconds = Math.floor(timeInSeconds % 60);
+        const timeInMs = (beat * 60 / bpm / 4) * 1000 + gapMs;
+        const minutes = Math.floor(timeInMs / ULTRASTAR.TIME.MS_PER_MINUTE);
+        const seconds = Math.floor((timeInMs % ULTRASTAR.TIME.MS_PER_MINUTE) / ULTRASTAR.TIME.MS_PER_SECOND);
+        const milliseconds = Math.round(timeInMs % ULTRASTAR.TIME.MS_PER_SECOND);
 
-        return { minutes, seconds };
+        return { minutes, seconds, milliseconds };
     },
 
-    formatTime(minutes, seconds) {
+    formatTime(minutes, seconds, milliseconds = 0) {
         const mm = String(minutes).padStart(2, '0');
         const ss = String(seconds).padStart(2, '0');
-        return `${mm}:${ss}`;
+        const ms = String(milliseconds).padStart(3, '0');
+        return `${mm}:${ss}.${ms}`;
     }
 };

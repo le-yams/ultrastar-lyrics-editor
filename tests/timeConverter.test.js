@@ -116,37 +116,37 @@ describe('TimeConverter - validateComponents', () => {
 describe('TimeConverter - beatToTime', () => {
     test('converts beat 0 with BPM 120 and no GAP', () => {
         const result = TimeConverter.beatToTime(0, 120, 0);
-        expect(result).toEqual({ minutes: 0, seconds: 0 });
+        expect(result).toEqual({ minutes: 0, seconds: 0, milliseconds: 0 });
     });
 
     test('converts beat 480 with BPM 120 and no GAP', () => {
         // 480 beats * 60 / 120 / 4 = 60 seconds = 1 minute
         const result = TimeConverter.beatToTime(480, 120, 0);
-        expect(result).toEqual({ minutes: 1, seconds: 0 });
+        expect(result).toEqual({ minutes: 1, seconds: 0, milliseconds: 0 });
     });
 
     test('converts beat 240 with BPM 120 and no GAP', () => {
         // 240 beats * 60 / 120 / 4 = 30 seconds
         const result = TimeConverter.beatToTime(240, 120, 0);
-        expect(result).toEqual({ minutes: 0, seconds: 30 });
+        expect(result).toEqual({ minutes: 0, seconds: 30, milliseconds: 0 });
     });
 
     test('applies GAP offset correctly', () => {
         // 0 beats + 5000 ms GAP = 5 seconds
         const result = TimeConverter.beatToTime(0, 120, 5000);
-        expect(result).toEqual({ minutes: 0, seconds: 5 });
+        expect(result).toEqual({ minutes: 0, seconds: 5, milliseconds: 0 });
     });
 
     test('combines beat and GAP', () => {
         // 240 beats (30s) + 5000 ms GAP = 35 seconds
         const result = TimeConverter.beatToTime(240, 120, 5000);
-        expect(result).toEqual({ minutes: 0, seconds: 35 });
+        expect(result).toEqual({ minutes: 0, seconds: 35, milliseconds: 0 });
     });
 
     test('handles different BPM values', () => {
         // 240 beats * 60 / 60 / 4 = 60 seconds
         const result = TimeConverter.beatToTime(240, 60, 0);
-        expect(result).toEqual({ minutes: 1, seconds: 0 });
+        expect(result).toEqual({ minutes: 1, seconds: 0, milliseconds: 0 });
     });
 
     test('returns null for invalid BPM (0)', () => {
@@ -164,36 +164,48 @@ describe('TimeConverter - beatToTime', () => {
         expect(result).toBeNull();
     });
 
-    test('handles fractional seconds correctly (floors them)', () => {
+    test('handles fractional seconds correctly', () => {
         // 120 beats * 60 / 120 / 4 = 15 seconds
         const result = TimeConverter.beatToTime(120, 120, 0);
-        expect(result).toEqual({ minutes: 0, seconds: 15 });
+        expect(result).toEqual({ minutes: 0, seconds: 15, milliseconds: 0 });
+    });
+
+    test('computes milliseconds from beat position', () => {
+        // 1 beat * 60 / 120 / 4 = 0.125 seconds = 125 ms
+        const result = TimeConverter.beatToTime(1, 120, 0);
+        expect(result).toEqual({ minutes: 0, seconds: 0, milliseconds: 125 });
+    });
+
+    test('computes milliseconds from GAP offset', () => {
+        // 0 beats + 1500 ms GAP = 1.5 seconds
+        const result = TimeConverter.beatToTime(0, 120, 1500);
+        expect(result).toEqual({ minutes: 0, seconds: 1, milliseconds: 500 });
     });
 });
 
 describe('TimeConverter - formatTime', () => {
-    test('formats 0:0 as 00:00', () => {
-        expect(TimeConverter.formatTime(0, 0)).toBe('00:00');
+    test('formats 0:0.0 as 00:00.000', () => {
+        expect(TimeConverter.formatTime(0, 0, 0)).toBe('00:00.000');
     });
 
-    test('formats 1:30 as 01:30', () => {
-        expect(TimeConverter.formatTime(1, 30)).toBe('01:30');
+    test('formats 1:30.0 as 01:30.000', () => {
+        expect(TimeConverter.formatTime(1, 30, 0)).toBe('01:30.000');
     });
 
-    test('formats 0:5 as 00:05', () => {
-        expect(TimeConverter.formatTime(0, 5)).toBe('00:05');
+    test('formats with milliseconds', () => {
+        expect(TimeConverter.formatTime(0, 5, 125)).toBe('00:05.125');
     });
 
-    test('formats 10:59 as 10:59', () => {
-        expect(TimeConverter.formatTime(10, 59)).toBe('10:59');
-    });
-
-    test('formats 99:99 as 99:99', () => {
-        expect(TimeConverter.formatTime(99, 99)).toBe('99:99');
+    test('pads milliseconds with leading zeros', () => {
+        expect(TimeConverter.formatTime(10, 59, 7)).toBe('10:59.007');
     });
 
     test('formats single digit values with leading zeros', () => {
-        expect(TimeConverter.formatTime(5, 9)).toBe('05:09');
+        expect(TimeConverter.formatTime(5, 9, 50)).toBe('05:09.050');
+    });
+
+    test('defaults milliseconds to 0 when omitted', () => {
+        expect(TimeConverter.formatTime(1, 30)).toBe('01:30.000');
     });
 });
 
