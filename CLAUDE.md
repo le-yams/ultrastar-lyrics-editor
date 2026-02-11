@@ -59,7 +59,9 @@ App.jsx (UI) → TimingsEditor → UltraStarParser → constants
              → UltraStarParser
 ```
 
-**App.jsx** (per tool) is a single-file UI containing all React components. Each tool has its own `App.jsx`, `main.jsx`, and `index.html`.
+**App.jsx** (per tool) contains tool-specific React components. Each tool has its own `App.jsx`, `main.jsx`, and `index.html`.
+
+**Shared React components:** `src/components/shared.jsx` exports `ThemeToggle`, `NotificationToast`, `FileUploadZone`, `Upload`, `Download`, `HelpIcon`, `PageLayout`, `ToolHeader`, `InstructionsBox`, and `GenerateButtons` — imported by both tools' `App.jsx`.
 
 **Shared modules:** `UltraStarParser`, `FileManager`, `TimeConverter`, and `constants` live in `src/lyrics-editor/` and are imported by other tools via relative paths (`../lyrics-editor/...`).
 
