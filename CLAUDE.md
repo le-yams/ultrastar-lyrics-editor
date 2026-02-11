@@ -106,6 +106,7 @@ Example: `hel|lo world` → Notes: `hel` (no space), `lo ` (with space), `world`
 - **Components:** PascalCase (`LyricsEditor`)
 - **Functions:** camelCase (`parseLyrics`)
 - **File encoding:** UTF-8 WITHOUT BOM
+- **Tailwind CSS:** Use v4 syntax — `shrink-0` (not `flex-shrink-0`), `grow` (not `flex-grow`), `bg-linear-to-*` (not `bg-gradient-to-*`), and named spacing scale (e.g., `max-h-150` for 600px) instead of arbitrary values (`max-h-[600px]`) when the value is a multiple of 4px
 
 ## Testing Requirements
 

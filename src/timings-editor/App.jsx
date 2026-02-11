@@ -39,19 +39,19 @@ const NotesTimingsDisplay = ({ noteLines, offsets, onOffsetChange, bpm, gapMs })
             <h2 className="text-xl font-semibold text-theme-title mb-3">
                 Notes and Timings
             </h2>
-            <div className="bg-theme-surface rounded-lg p-4 max-h-[600px] overflow-y-auto">
+            <div className="bg-theme-surface rounded-lg p-4 max-h-150 overflow-y-auto">
                 {noteLines.map((line, index) => {
                     if (UltraStarParser.isBreakLine(line)) {
                         const position = TimingsEditor.parseBreakPosition(line);
                         const adjustedPosition = position !== null ? position + cumulativeOffsets[index] : null;
                         return (
                             <div key={index} className="flex items-center gap-2 py-1 border-t border-theme-border my-1">
-                                <span className="w-20 flex-shrink-0"></span>
-                                <span className="text-xs text-gray-400 w-16 flex-shrink-0">
+                                <span className="w-20 shrink-0"></span>
+                                <span className="text-xs text-gray-400 w-16 shrink-0">
                                     break {adjustedPosition !== null ? adjustedPosition : ''}
                                 </span>
                                 <span className="flex-1"></span>
-                                <div className="w-20 flex-shrink-0">
+                                <div className="w-20 shrink-0">
                                     <input
                                         type="number"
                                         value={offsets[index] !== undefined ? offsets[index] : ''}
@@ -60,7 +60,7 @@ const NotesTimingsDisplay = ({ noteLines, offsets, onOffsetChange, bpm, gapMs })
                                         placeholder="0"
                                     />
                                 </div>
-                                <span className="w-16 flex-shrink-0 text-xs text-center text-theme-text-secondary">
+                                <span className="w-16 shrink-0 text-xs text-center text-theme-text-secondary">
                                     {cumulativeOffsets[index] !== 0 ? (
                                         <span className={cumulativeOffsets[index] > 0 ? 'text-green-500' : 'text-red-500'}>
                                             {cumulativeOffsets[index] > 0 ? '+' : ''}{cumulativeOffsets[index]}
@@ -93,19 +93,19 @@ const NotesTimingsDisplay = ({ noteLines, offsets, onOffsetChange, bpm, gapMs })
                         return (
                             <div key={index} className="flex items-center gap-2 py-1">
                                 {timing ? (
-                                    <span className={`text-xs font-mono w-20 flex-shrink-0 font-semibold ${hasOffset ? 'text-yellow-500' : 'text-theme-accent'}`}>
+                                    <span className={`text-xs font-mono w-20 shrink-0 font-semibold ${hasOffset ? 'text-yellow-500' : 'text-theme-accent'}`}>
                                         {TimeConverter.formatTime(timing.minutes, timing.seconds, timing.milliseconds)}
                                     </span>
                                 ) : (
-                                    <span className="w-20 flex-shrink-0"></span>
+                                    <span className="w-20 shrink-0"></span>
                                 )}
-                                <span className={`text-xs w-16 flex-shrink-0 ${hasOffset ? 'text-yellow-500' : 'text-gray-500'}`}>
+                                <span className={`text-xs w-16 shrink-0 ${hasOffset ? 'text-yellow-500' : 'text-gray-500'}`}>
                                     {parsed.type} {adjustedStart}
                                 </span>
                                 <span className="text-xs text-theme-text flex-1 truncate" title={parsed.text}>
                                     {parsed.text}
                                 </span>
-                                <div className="w-20 flex-shrink-0">
+                                <div className="w-20 shrink-0">
                                     <input
                                         type="number"
                                         value={offsets[index] !== undefined ? offsets[index] : ''}
@@ -114,7 +114,7 @@ const NotesTimingsDisplay = ({ noteLines, offsets, onOffsetChange, bpm, gapMs })
                                         placeholder="0"
                                     />
                                 </div>
-                                <span className="w-16 flex-shrink-0 text-xs text-center text-theme-text-secondary">
+                                <span className="w-16 shrink-0 text-xs text-center text-theme-text-secondary">
                                     {cumulativeOffsets[index] !== 0 ? (
                                         <span className={cumulativeOffsets[index] > 0 ? 'text-green-500' : 'text-red-500'}>
                                             {cumulativeOffsets[index] > 0 ? '+' : ''}{cumulativeOffsets[index]}
@@ -375,11 +375,11 @@ export default function UltraStarTimingsEditor() {
                             </div>
 
                             <div className="mb-3 flex items-center gap-4 text-xs text-theme-text-secondary px-1">
-                                <span className="w-20 flex-shrink-0">Timing</span>
-                                <span className="w-16 flex-shrink-0">Beat</span>
+                                <span className="w-20 shrink-0">Timing</span>
+                                <span className="w-16 shrink-0">Beat</span>
                                 <span className="flex-1">Text</span>
-                                <span className="w-20 flex-shrink-0 text-center">Offset</span>
-                                <span className="w-16 flex-shrink-0 text-center">Cumul</span>
+                                <span className="w-20 shrink-0 text-center">Offset</span>
+                                <span className="w-16 shrink-0 text-center">Cumul</span>
                             </div>
 
                             <NotesTimingsDisplay

@@ -81,7 +81,7 @@ export const NotificationToast = ({ notification }) => {
 // PAGE LAYOUT COMPONENT
 // ============================================================================
 export const PageLayout = ({ notification, children }) => (
-    <div className="min-h-screen bg-gradient-to-br from-theme-page-from to-theme-page-to">
+    <div className="min-h-screen bg-linear-to-br from-theme-page-from to-theme-page-to">
         <NotificationToast notification={notification} />
         <div className="w-full max-w-6xl mx-auto p-6">
             <div className="bg-theme-card rounded-lg shadow-theme p-6">
@@ -156,7 +156,7 @@ export const GenerateButtons = ({ onDownload, onCopy }) => (
 export const FileUploadZone = ({ onFileLoad, fileInfo, isDragging, onDragOver, onDragLeave, onDrop, label = 'Load UltraStar File' }) => {
     return (
         <label
-            className={`border-2 border-dashed rounded-lg transition-colors cursor-pointer flex flex-col items-center justify-center p-4 min-h-[150px] ${
+            className={`border-2 border-dashed rounded-lg transition-colors cursor-pointer flex flex-col items-center justify-center p-4 min-h-37.5 ${
                 isDragging ? 'border-purple-500 bg-theme-drag-bg' : 'border-theme-border-accent bg-theme-card'
             }`}
             onDragOver={onDragOver}

@@ -226,16 +226,16 @@ const SyncPreview = ({ syncedLines, onLineUpdate, bpm, gapMs }) => {
                         return (
                             <div key={index} className="flex items-center gap-2 py-1">
                                 {timing ? (
-                                    <span className="text-xs font-mono text-theme-accent w-20 flex-shrink-0 font-semibold">
+                                    <span className="text-xs font-mono text-theme-accent w-20 shrink-0 font-semibold">
                                         {TimeConverter.formatTime(timing.minutes, timing.seconds, timing.milliseconds)}
                                     </span>
                                 ) : (
-                                    <span className="w-20 flex-shrink-0"></span>
+                                    <span className="w-20 shrink-0"></span>
                                 )}
-                                <span className="text-xs text-gray-500 w-16 flex-shrink-0">
+                                <span className="text-xs text-gray-500 w-16 shrink-0">
                                     {parsed.type} {parsed.start}
                                 </span>
-                                <span className="text-xs text-theme-highlight w-32 flex-shrink-0 italic truncate" title={item.original}>
+                                <span className="text-xs text-theme-highlight w-32 shrink-0 italic truncate" title={item.original}>
                                     {item.original}
                                 </span>
                                 <input
